@@ -4,6 +4,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
 
 import javax.swing.JFrame;
 
@@ -27,17 +28,22 @@ public class Viewer
 	
 	public Viewer(Instance instance, Solution solution, String title)
 	{
-		createView(instance, solution, title);
+		createView(instance, solution, null, title);
 	}
 
 	public Viewer(Instance instance, Solution solution) 
 	{
-		createView(instance, solution, "");
+		createView(instance, solution, null, "");
 	}
 
-	private void createView(Instance instance, Solution solution, String title) 
+	public Viewer(Instance instance, Solution solution, ArrayList<Point> centroids) 
 	{
-		XYSeriesCollection dataset = createDataset(instance, solution);
+		createView(instance, solution, centroids, "");
+	}
+
+	private void createView(Instance instance, Solution solution, ArrayList<Point> centroids, String title) 
+	{
+		XYSeriesCollection dataset = createDataset(instance, solution, centroids);
 		JFreeChart xylineChart = ChartFactory.createXYLineChart("", "", "", dataset, PlotOrientation.VERTICAL, true, true, false);
 		ChartPanel chartPanel = new ChartPanel(xylineChart);
 		XYPlot plot = xylineChart.getXYPlot();
@@ -72,12 +78,12 @@ public class Viewer
 		_frame.setVisible(true);
 	}
 	
-	private XYSeriesCollection createDataset(Instance instance, Solution solution)
+	private XYSeriesCollection createDataset(Instance instance, Solution solution, ArrayList<Point> centroids)
 	{
 		XYSeriesCollection dataset = new XYSeriesCollection();
-		XYSeries[] series = new XYSeries[instance.getClasses()];
+		XYSeries[] series = new XYSeries[instance.getClasses()+1];
 		
-		for(int i=0; i<instance.getClasses(); ++i)
+		for(int i=0; i<instance.getClasses()+1; ++i)
 		{
 			series[i] = new XYSeries("Class " + i);
 			dataset.addSeries(series[i]);
@@ -88,6 +94,12 @@ public class Viewer
 			for(Cluster cluster: solution.getClusters())
 			for(Point point: cluster.asSet())
 				series[cluster.getClassID()].add(point.get(0), point.get(1));
+		}
+		
+		if( centroids != null )
+		{
+			for(Point point: centroids) if( point != null )
+				series[instance.getClasses()].add(point.get(0), point.get(1));
 		}
 		
 		return dataset;

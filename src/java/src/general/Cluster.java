@@ -2,6 +2,7 @@ package general;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -167,7 +168,6 @@ public class Cluster
 		return ret;
 	}
 	
-	
 	public double totalDistanceToCentroid()
 	{
 		if( _points.size() == 0 )
@@ -175,6 +175,25 @@ public class Cluster
 		
 		Point c = this.centroid();
 		return _points.stream().mapToDouble(p -> p.distance(c)).sum();
+	}
+
+	public double span()
+	{
+		if( _points.size() == 0 )
+			return 0;
+		
+		int dimension = _points.iterator().next().getDimension();
+
+		double ret = 0;
+		for(int t=0; t<dimension; ++t)
+			ret += span(t);
+		
+		return ret;
+	}
+	
+	public double span(int dimension)
+	{
+		return max(dimension) - min(dimension);
 	}
 	
 	public double diagonal()
@@ -289,6 +308,26 @@ public class Cluster
 
 		for(Point point: that.getPoints())
 			ret.add(point);
+		
+		return ret;
+	}
+	
+	public List<Point> misclassified(Instance instance)
+	{
+		return instance.stream().filter(p -> p.getClassID() != this.getClassID() && this.covers(p)).collect(Collectors.toList());
+	}
+	
+	public double distanceToBorder(Point point)
+	{
+		if( point == null )
+			return 0;
+		
+		double ret = Double.POSITIVE_INFINITY;
+		for(int t=0; t<point.getDimension(); ++t)
+		{
+			ret = Math.min(ret, Math.abs(point.get(t) - _min[t]));
+			ret = Math.min(ret, Math.abs(point.get(t) - _max[t]));
+		}
 		
 		return ret;
 	}

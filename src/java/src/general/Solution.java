@@ -85,8 +85,13 @@ public class Solution
 	{
 		return _clusters != null;
 	}
+	
+	public double totalSpan()
+	{
+		return _clusters.stream().mapToDouble(c -> c.span()).sum();
+	}
 
-	public double objective() 
+	public double totalDiagonal() 
 	{
 		return _clusters.stream().mapToDouble(c -> c.diagonal()).sum();
 	}

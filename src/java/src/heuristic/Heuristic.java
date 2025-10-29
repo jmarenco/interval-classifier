@@ -3,6 +3,7 @@ package heuristic;
 import java.util.ArrayList;
 import java.util.Random;
 
+import general.Cluster;
 import general.Instance;
 import general.Point;
 import general.Solution;
@@ -26,6 +27,9 @@ public class Heuristic
 		reconstructClusters();
 		while( recalculateCentroids() == true )
 			reconstructClusters();
+		
+//		recalculateCentroids();
+//		reconstructClusters();
 		
 		return _solution;
 	}
@@ -71,12 +75,19 @@ public class Heuristic
 	private boolean recalculateCentroids()
 	{
 		boolean ret = false;
-		for(int i=0; i<_centroids.size(); ++i)
+		for(int i=0; i<_centroids.size(); ++i) if( _centroids.get(i) != null || _solution.getCluster(i).size() > 0 )
 		{
-			Point newCentroid = _solution.getCluster(i).centroid();
-
-			if( _centroids.get(i) == null && newCentroid == null )
-				continue;
+			Cluster cluster = _solution.getCluster(i);
+			Point newCentroid = cluster.centroid();
+			double radius = cluster.distanceToBorder(newCentroid);
+			
+			for(Point foreign: cluster.misclassified(_instance))
+			{
+				double dist = cluster.distanceToBorder(foreign);
+				double factor = Math.exp(-dist * dist / radius / radius) / 10;
+				System.out.println(dist + " " + radius + " " + (dist * dist / radius / radius) + " " + factor);
+				newCentroid.escapeFrom(foreign, factor);
+			}
 			
 			if( _centroids.get(i) == null || newCentroid == null || _centroids.get(i).distance(newCentroid) > 0.001 )
 			{
@@ -86,5 +97,10 @@ public class Heuristic
 		}
 		
 		return ret;
+	}
+	
+	public ArrayList<Point> getCentroids()
+	{
+		return _centroids;
 	}
 }

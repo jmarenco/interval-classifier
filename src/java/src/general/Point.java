@@ -89,6 +89,14 @@ public class Point
 			_values[i] /= factor;
 	}
 	
+	public void escapeFrom(Point other, double distance)
+	{
+		Point difference = this.clone();
+		difference.subtract(other);
+		difference.scale(distance);
+		this.sum(difference);
+	}
+	
 	public double distance(Point other)
 	{
 		if( this.getDimension() != other.getDimension() )

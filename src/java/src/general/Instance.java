@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.HashMap;
 import java.util.List;
@@ -80,6 +81,11 @@ public class Instance
 	public int getClusters(int classID)
 	{
 		return _clusters.get(classID);
+	}
+	
+	public int getTotalClusters()
+	{
+		return IntStream.range(0, _classes).map(i -> getClusters(i)).sum();
 	}
 	
 	public int getDimension()
