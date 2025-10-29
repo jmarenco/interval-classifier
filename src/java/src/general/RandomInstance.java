@@ -29,9 +29,9 @@ public class RandomInstance
 			instance.add(point);
 		}
 		
-		Point point = randomPoint(random, points, 1, dimension, dispersion);
-		point.sum(centroids[0]);
-		instance.add(point);
+//		Point point = randomPoint(random, points, 1, dimension, dispersion);
+//		point.sum(centroids[0]);
+//		instance.add(point);
 
 		return instance;
 	}

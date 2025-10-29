@@ -41,6 +41,11 @@ public class Viewer
 		createView(instance, solution, centroids, "");
 	}
 
+	public Viewer(Instance instance, Solution solution, ArrayList<Point> centroids, String title) 
+	{
+		createView(instance, solution, centroids, title);
+	}
+
 	private void createView(Instance instance, Solution solution, ArrayList<Point> centroids, String title) 
 	{
 		XYSeriesCollection dataset = createDataset(instance, solution, centroids);
