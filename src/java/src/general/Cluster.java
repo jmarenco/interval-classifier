@@ -42,7 +42,7 @@ public class Cluster
 	{
 		Cluster ret = new Cluster();
 		
-		for(Point point: instance.stream().filter(p -> p.getClassID() == classID).collect(Collectors.toList()))
+		for(Point point: instance.stream(classID).collect(Collectors.toList()))
 			ret.add(point);
 		
 		return ret;
@@ -62,9 +62,22 @@ public class Cluster
 			_min = new double[point.getDimension()];
 			_max = new double[point.getDimension()];
 			_class = point.getClassID();
+			
+			for(int t=0; t<point.getDimension(); ++t)
+				_min[t] = _max[t] = point.get(t); 
 		}
 		else if( this.getClassID() != point.getClassID() )
+		{
 			throw new RuntimeException("Point of class " + point.getClassID() + " added to class " + this.getClassID() + " cluster!");
+		}
+		else
+		{
+			for(int t=0; t<point.getDimension(); ++t)
+			{
+				_min[t] = Math.min(_min[t], point.get(t));
+				_max[t] = Math.max(_max[t], point.get(t));
+			}
+		}
 
 		_points.add(point);
 	}

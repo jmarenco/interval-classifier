@@ -18,7 +18,7 @@ public class Point
 	
 	public static Point fromVector(int id, int classID, double... values)
 	{
-		Point ret = new Point(id, values.length, classID);
+		Point ret = new Point(id, classID, values.length);
 		
 		for(int i=0; i<values.length; ++i)
 			ret.set(i, values[i]);

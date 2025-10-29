@@ -1,9 +1,13 @@
 package general;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Random;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.HashMap;
+import java.util.List;
 
 public class Instance
 {
@@ -83,6 +87,11 @@ public class Instance
 		return _points.size() == 0 ? 0 : _points.get(0).getDimension();
 	}
 	
+	public int getClasses()
+	{
+		return _classes;
+	}
+	
 	public double min(int coordinate)
 	{
 		return _points.stream().mapToDouble(p -> p.get(coordinate)).min().orElse(0);
@@ -122,8 +131,24 @@ public class Instance
 			System.out.println("clusters[" + i + "] = " + _clusters.get(i));
 	}
 	
+	public List<Point> asList()
+	{
+		return Collections.unmodifiableList(_points);
+	}
+	
 	public Stream<Point> stream()
 	{
 		return _points.stream();
+	}
+
+	public Stream<Point> stream(int classID)
+	{
+		return _points.stream().filter(p -> p.getClassID() == classID);
+	}
+	
+	public Point random(Random random, int classID)
+	{
+		List<Point> points = this.stream(classID).collect(Collectors.toList());
+		return points.get(random.nextInt(points.size()));
 	}
 }

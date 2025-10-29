@@ -32,10 +32,25 @@ public class Solution
 		
 		return ret;
 	}
+	
+	public static Solution withEmptyClusters(Instance instance, int clusters)
+	{
+		Solution ret = new Solution();
+		
+		for(int i=0; i<clusters; ++i)
+			ret.add(new Cluster());
+		
+		return ret;
+	}
 
 	public ArrayList<Cluster> getClusters()
 	{
 		return _clusters;
+	}
+	
+	public Cluster getCluster(int index)
+	{
+		return _clusters.get(index); 
 	}
 
 	public void add(Cluster cluster) 
