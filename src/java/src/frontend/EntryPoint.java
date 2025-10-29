@@ -10,9 +10,9 @@ public class EntryPoint
 {
 	public static void main(String[] args)
 	{
-//		Instance instance = RandomInstance.generate(2, 50, 3, 0.5, 5);
+		Instance instance = RandomInstance.generate(2, 50, 3, 0.5, 5);
 //		Instance instance = RandomInstance.generate(2, 10, 2, 0.5, 5);
-		Instance instance = RandomInstance.generate(2, 20, 2, 0.7, 5);
+//		Instance instance = RandomInstance.generate(2, 20, 2, 0.7, 5);
 
 		Heuristic heuristic = new Heuristic(instance);
 		Solution solution1 = heuristic.run();

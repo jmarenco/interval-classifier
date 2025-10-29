@@ -13,6 +13,9 @@ public class Heuristic
 	private Instance _instance;
 	private Solution _solution;
 	private ArrayList<Point> _centroids;
+
+	private long _start;
+	private int _iterations;
 	
 	public Heuristic(Instance instance)
 	{
@@ -23,14 +26,17 @@ public class Heuristic
 	{
 		_solution = null;
 		_centroids = initialCentroids();
+		_start = System.currentTimeMillis();
+		_iterations = 1;
 		
 		reconstructClusters();
 		while( recalculateCentroids() == true )
+		{
 			reconstructClusters();
+			_iterations++;
+		}
 		
-//		recalculateCentroids();
-//		reconstructClusters();
-		
+		showSummary();
 		return _solution;
 	}
 	
@@ -85,7 +91,6 @@ public class Heuristic
 			{
 				double dist = cluster.distanceToBorder(foreign);
 				double factor = Math.exp(-dist * dist / radius / radius) / 10;
-				System.out.println(dist + " " + radius + " " + (dist * dist / radius / radius) + " " + factor);
 				newCentroid.escapeFrom(foreign, factor);
 			}
 			
@@ -97,6 +102,15 @@ public class Heuristic
 		}
 		
 		return ret;
+	}
+	
+	private void showSummary()
+	{
+		System.out.print(_instance.getName() + " | Heur | Feasible | ");
+		System.out.print("Obj: " + _solution.misclassified(_instance) + " | ");
+		System.out.print(String.format("%6.2f", (System.currentTimeMillis() - _start) / 1000.0) + " sec. | ");
+		System.out.print(_iterations + " its | | | ");
+		System.out.println();
 	}
 	
 	public ArrayList<Point> getCentroids()

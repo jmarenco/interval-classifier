@@ -100,4 +100,9 @@ public class Solution
 	{
 		return _clusters.stream().mapToDouble(c -> c.diagonal()).average().orElse(0);
 	}
+
+	public int misclassified(Instance instance)
+	{
+		return _clusters.stream().mapToInt(c -> c.misclassified(instance).size()).sum();
+	}
 }
