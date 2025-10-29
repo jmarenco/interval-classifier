@@ -1,0 +1,6 @@
+Structure of the repository:
+
+/docs: Documentation files
+
+/src: Source code
+/src/java: Java source code, as eclipse proect
