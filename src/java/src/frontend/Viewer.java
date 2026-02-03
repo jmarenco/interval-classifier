@@ -100,6 +100,11 @@ public class Viewer
 			for(Point point: cluster.asSet())
 				series[cluster.getClassID()].add(point.get(0), point.get(1));
 		}
+		else
+		{
+			for(int i=0; i<instance.getPoints(); ++i)
+				series[instance.getPoint(i).getClassID()].add(instance.getPoint(i).get(0), instance.getPoint(i).get(1));
+		}
 		
 		if( centroids != null )
 		{
