@@ -35,7 +35,7 @@ public class EntryPoint
 		
 		if( argmap.containsArg("-show") )
 		{
-			new Viewer(instance, null, null, "Instance");
+			new Viewer(instance, "Instance");
 			new Viewer(instance, solution1, heuristic.getCentroids(), "Heuristic solution");
 			new Viewer(instance, solution2, "Model solution");
 		}

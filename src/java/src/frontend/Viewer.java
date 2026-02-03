@@ -26,6 +26,11 @@ public class Viewer
 	private JFrame _frame;
 	private Color[] _seriesColor = { Color.RED, Color.BLUE, Color.GREEN, Color.GRAY, Color.BLACK };
 	
+	public Viewer(Instance instance, String title)
+	{
+		createView(instance, null, null, title);
+	}
+
 	public Viewer(Instance instance, Solution solution, String title)
 	{
 		createView(instance, solution, null, title);
