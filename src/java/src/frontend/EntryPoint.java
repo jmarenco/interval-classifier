@@ -4,6 +4,7 @@ import general.Instance;
 import general.RandomInstance;
 import general.Solution;
 import heuristic.Heuristic;
+import heuristic.Heuristics;
 import model.RectangularModel;
 
 public class EntryPoint
@@ -14,7 +15,7 @@ public class EntryPoint
 //		Instance instance = RandomInstance.generate(2, 10, 2, 0.5, 5);
 //		Instance instance = RandomInstance.generate(2, 20, 2, 0.7, 5);
 
-		Heuristic heuristic = new Heuristic(instance);
+		Heuristic heuristic = Heuristics.basic(instance);
 		Solution solution1 = heuristic.run();
 
 		RectangularModel model = new RectangularModel(instance);

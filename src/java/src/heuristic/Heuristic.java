@@ -1,18 +1,41 @@
 package heuristic;
 
 import java.util.ArrayList;
-import java.util.Random;
 
-import general.Cluster;
 import general.Instance;
 import general.Point;
 import general.Solution;
 
 public class Heuristic
 {
+	public interface InitialCentroidsStrategy
+	{
+		ArrayList<Point> initialCentroids();
+	}
+
+	public interface ReconstructClustersStrategy
+	{
+		Solution reconstructClusters(ArrayList<Point> centroids);
+	}
+	
+	public interface RecalculateCentroidsStrategy
+	{
+		boolean recalculateCentroids(Solution solution, ArrayList<Point> centroids);
+	}
+	
+	public interface AdjustSolutionStrategy
+	{
+		Solution adjustSolution(Solution solution);
+	}
+
 	private Instance _instance;
 	private Solution _solution;
 	private ArrayList<Point> _centroids;
+	
+	private InitialCentroidsStrategy _initialCentroids;
+	private ReconstructClustersStrategy _reconstructClusters;
+	private RecalculateCentroidsStrategy _recalculateCentroids;
+	private AdjustSolutionStrategy _adjustSolution;
 
 	private long _start;
 	private int _iterations;
@@ -22,17 +45,36 @@ public class Heuristic
 		_instance = instance;
 	}
 	
+	public void set(InitialCentroidsStrategy strategy)
+	{
+		_initialCentroids = strategy;
+	}
+	
+	public void set(ReconstructClustersStrategy strategy)
+	{
+		_reconstructClusters = strategy;
+	}
+	
+	public void set(RecalculateCentroidsStrategy strategy)
+	{
+		_recalculateCentroids = strategy;
+	}
+	
+	public void set(AdjustSolutionStrategy strategy)
+	{
+		_adjustSolution = strategy;
+	}
+	
 	public Solution run()
 	{
-		_solution = null;
-		_centroids = initialCentroids();
-		_start = System.currentTimeMillis();
-		_iterations = 1;
+		checkStrategies();
+		initializeStructures();
 		
-		reconstructClusters();
-		while( recalculateCentroids() == true )
+		_solution = _reconstructClusters.reconstructClusters(_centroids);
+		while( _recalculateCentroids.recalculateCentroids(_solution, _centroids) == true )
 		{
-			reconstructClusters();
+			_solution = _reconstructClusters.reconstructClusters(_centroids);
+			_solution = _adjustSolution.adjustSolution(_solution);
 			_iterations++;
 		}
 		
@@ -40,68 +82,27 @@ public class Heuristic
 		return _solution;
 	}
 	
-	private ArrayList<Point> initialCentroids()
+	private void checkStrategies()
 	{
-		Random random = new Random(0);
-		ArrayList<Point> ret = new ArrayList<Point>();
-		
-		for(int i=0; i<_instance.getClasses(); ++i)
-		for(int j=0; j<_instance.getClusters(i); ++j)
-			ret.add(_instance.random(random, i));
-		
-		return ret;
+		if( _initialCentroids == null )
+			throw new RuntimeException("No InitialCentroidsStrategy specified!");
+
+		if( _reconstructClusters == null )
+			throw new RuntimeException("No ReconstructClustersStrategy specified!");
+
+		if( _recalculateCentroids == null )
+			throw new RuntimeException("No RecalculateCentroidsStrategy specified!");
+
+		if( _adjustSolution == null )
+			throw new RuntimeException("No AdjustSolutionStrategy specified!");
 	}
-	
-	private void reconstructClusters()
+
+	private void initializeStructures()
 	{
-		_solution = Solution.withEmptyClusters(_instance, _centroids.size());
-		
-		for(Point point: _instance.asList())
-			_solution.getCluster(closestCentroid(point)).add(point);
-	}
-	
-	private int closestCentroid(Point point)
-	{
-		int bestIndex = -1;
-		double bestDistance = Double.POSITIVE_INFINITY;
-		
-		for(int i=0; i<_centroids.size(); ++i) if( _centroids.get(i) != null && _centroids.get(i).getClassID() == point.getClassID() )
-		{
-			double distance = point.distance(_centroids.get(i));
-			if( distance < bestDistance )
-			{
-				bestIndex = i;
-				bestDistance = distance;
-			}
-		}
-		
-		return bestIndex;
-	}
-	
-	private boolean recalculateCentroids()
-	{
-		boolean ret = false;
-		for(int i=0; i<_centroids.size(); ++i) if( _centroids.get(i) != null || _solution.getCluster(i).size() > 0 )
-		{
-			Cluster cluster = _solution.getCluster(i);
-			Point newCentroid = cluster.centroid();
-			double radius = cluster.distanceToBorder(newCentroid);
-			
-			for(Point foreign: cluster.misclassified(_instance))
-			{
-				double dist = cluster.distanceToBorder(foreign);
-				double factor = Math.exp(-dist * dist / radius / radius) / 10;
-				newCentroid.escapeFrom(foreign, factor);
-			}
-			
-			if( _centroids.get(i) == null || newCentroid == null || _centroids.get(i).distance(newCentroid) > 0.001 )
-			{
-				_centroids.set(i, newCentroid);
-				ret = true;
-			}
-		}
-		
-		return ret;
+		_solution = null;
+		_centroids = _initialCentroids.initialCentroids();
+		_start = System.currentTimeMillis();
+		_iterations = 1;
 	}
 	
 	private void showSummary()
