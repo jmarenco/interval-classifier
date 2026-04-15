@@ -39,8 +39,11 @@ public class Heuristic
 
 	private long _start;
 	private int _iterations;
-	private static int _rounds = 100;
-	private static int _timeLimit = 3600;
+	private int _rounds;
+
+	private static int _maxIterations = 100;
+	private static int _maxRounds = 100;
+	private static int _maxTime = 3600;
 	
 	public Heuristic(Instance instance)
 	{
@@ -69,14 +72,20 @@ public class Heuristic
 	
 	public Solution run()
 	{
-		long start = System.currentTimeMillis();
+		checkStrategies();
+
+		_start = System.currentTimeMillis();
+		_iterations = 0;
+		_rounds = 1;
 		_solution = singleRun();
 		
-		for(int i=1; i<_rounds && (System.currentTimeMillis() - start) / 1000 <= _timeLimit; ++i)
+		for(int i=1; i<_maxRounds && (System.currentTimeMillis() - _start) / 1000 <= _maxTime; ++i)
 		{
 			Solution actual = singleRun();
 			if( actual.misclassified(_instance) < _solution.misclassified(_instance) )
 				_solution = actual;
+			
+			_rounds++;
 		}
 		
 		showSummary();
@@ -85,15 +94,17 @@ public class Heuristic
 	
 	public Solution singleRun()
 	{
-		checkStrategies();
-		initializeStructures();
+		int it = 0;
+		_centroids = _initialCentroids.initialCentroids();
 		
 		Solution solution = _reconstructClusters.reconstructClusters(_centroids);
-		while( _recalculateCentroids.recalculateCentroids(solution, _centroids) == true )
+		while( _recalculateCentroids.recalculateCentroids(solution, _centroids) == true && it < _maxIterations )
 		{
 			solution = _reconstructClusters.reconstructClusters(_centroids);
 			solution = _adjustSolution.adjustSolution(solution);
+
 			_iterations++;
+			it++;
 		}
 		
 		return solution;
@@ -114,19 +125,13 @@ public class Heuristic
 			throw new RuntimeException("No AdjustSolutionStrategy specified!");
 	}
 
-	private void initializeStructures()
-	{
-		_centroids = _initialCentroids.initialCentroids();
-		_start = System.currentTimeMillis();
-		_iterations = 1;
-	}
-	
 	private void showSummary()
 	{
 		System.out.print(_instance.getName() + " | Heur | Feasible | ");
 		System.out.print("Obj: " + _solution.misclassified(_instance) + " | ");
 		System.out.print(String.format("%6.2f", (System.currentTimeMillis() - _start) / 1000.0) + " sec. | ");
-		System.out.print(_iterations + " its | | | ");
+		System.out.print(_rounds > 0 ? String.format("%.2f", _iterations / (double)_rounds) + " its | " : " | ");
+		System.out.print(_rounds + " rounds | | ");
 		System.out.println();
 	}
 	
@@ -137,11 +142,11 @@ public class Heuristic
 	
 	public static void setRounds(int rounds)
 	{
-		_rounds = rounds;
+		_maxRounds = rounds;
 	}
 	
 	public static void setMaxTime(int timeLimit)
 	{
-		_timeLimit = timeLimit;
+		_maxTime = timeLimit;
 	}
 }
