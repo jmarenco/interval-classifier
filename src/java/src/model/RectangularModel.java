@@ -23,9 +23,9 @@ public class RectangularModel
 	private int c;
 	private int[] classOf;
 	
-	private int _maxTime = 3600;
-	private boolean _verbose = false;
-	private boolean _summary = true;
+	private static int _maxTime = 3600;
+	private static boolean _verbose = false;
+	private static boolean _summary = true;
 
 	private IloNumVar[][] z;
 	private IloNumVar[][] r;
@@ -284,7 +284,7 @@ public class RectangularModel
 		_summary = summary;
 	}
 	
-	public void setMaxTime(int value)
+	public static void setMaxTime(int value)
 	{
 		_maxTime = value;
 	}

@@ -5,12 +5,11 @@ import general.RandomInstance;
 import general.Solution;
 import heuristic.Heuristic;
 import heuristic.Heuristics;
-import heuristic.RandomInitialCentroids;
 import model.RectangularModel;
 
 public class EntryPoint
 {
-	private static String _version = "0.05";
+	private static String _version = "0.06";
 	
 	public static void main(String[] args)
 	{
@@ -30,6 +29,8 @@ public class EntryPoint
 		
 		Instance instance = RandomInstance.generate(dim, points, clusters, disp, seed);
 		Heuristic.setRounds(argmap.intArg("-rounds", 10));
+		Heuristic.setMaxTime(argmap.intArg("-maxtime", 3600));
+		RectangularModel.setMaxTime(argmap.intArg("-maxtime", 3600));
 
 		Heuristic heuristic = Heuristics.basic(instance);
 		Solution solution1 = heuristic.run();
@@ -56,13 +57,15 @@ public class EntryPoint
 	{
 		System.out.println("Interval Classifier v" + _version);
 		System.out.println();
-		System.out.println("-d [i]      Dimension");
-		System.out.println("-n [i]      Number of points");
-		System.out.println("-c [i]      Number of clusters in each class");
-		System.out.println("-disp [f]   Dispersion in each cluster");
-		System.out.println("-seed [i]   Random seed");
-		System.out.println("-rounds [i] Heuristic rounds");
-		System.out.println("-show       Show solutions");
-		System.out.println("-nomip      Do not run MIP model");
+		System.out.println("-d [i]       Dimension");
+		System.out.println("-n [i]       Number of points");
+		System.out.println("-c [i]       Number of clusters in each class");
+		System.out.println("-disp [f]    Dispersion in each cluster");
+		System.out.println("-seed [i]    Random seed");
+		System.out.println("-rounds [i]  Heuristic rounds");
+		System.out.println("-maxtime [i] Time limit in seconds");
+		System.out.println("-show        Show solutions");
+		System.out.println("-nomip       Do not run MIP model");
+		
 	}
 }

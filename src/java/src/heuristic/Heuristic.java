@@ -40,6 +40,7 @@ public class Heuristic
 	private long _start;
 	private int _iterations;
 	private static int _rounds = 100;
+	private static int _timeLimit = 3600;
 	
 	public Heuristic(Instance instance)
 	{
@@ -68,9 +69,10 @@ public class Heuristic
 	
 	public Solution run()
 	{
+		long start = System.currentTimeMillis();
 		_solution = singleRun();
 		
-		for(int i=1; i<_rounds; ++i)
+		for(int i=1; i<_rounds && (System.currentTimeMillis() - start) / 1000 <= _timeLimit; ++i)
 		{
 			Solution actual = singleRun();
 			if( actual.misclassified(_instance) < _solution.misclassified(_instance) )
@@ -136,5 +138,10 @@ public class Heuristic
 	public static void setRounds(int rounds)
 	{
 		_rounds = rounds;
+	}
+	
+	public static void setMaxTime(int timeLimit)
+	{
+		_timeLimit = timeLimit;
 	}
 }
