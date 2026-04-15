@@ -39,6 +39,7 @@ public class Heuristic
 
 	private long _start;
 	private int _iterations;
+	private static int _rounds = 100;
 	
 	public Heuristic(Instance instance)
 	{
@@ -67,19 +68,33 @@ public class Heuristic
 	
 	public Solution run()
 	{
-		checkStrategies();
-		initializeStructures();
+		_solution = singleRun();
 		
-		_solution = _reconstructClusters.reconstructClusters(_centroids);
-		while( _recalculateCentroids.recalculateCentroids(_solution, _centroids) == true )
+		for(int i=1; i<_rounds; ++i)
 		{
-			_solution = _reconstructClusters.reconstructClusters(_centroids);
-			_solution = _adjustSolution.adjustSolution(_solution);
-			_iterations++;
+			Solution actual = singleRun();
+			if( actual.misclassified(_instance) < _solution.misclassified(_instance) )
+				_solution = actual;
 		}
 		
 		showSummary();
 		return _solution;
+	}
+	
+	public Solution singleRun()
+	{
+		checkStrategies();
+		initializeStructures();
+		
+		Solution solution = _reconstructClusters.reconstructClusters(_centroids);
+		while( _recalculateCentroids.recalculateCentroids(solution, _centroids) == true )
+		{
+			solution = _reconstructClusters.reconstructClusters(_centroids);
+			solution = _adjustSolution.adjustSolution(solution);
+			_iterations++;
+		}
+		
+		return solution;
 	}
 	
 	private void checkStrategies()
@@ -99,7 +114,6 @@ public class Heuristic
 
 	private void initializeStructures()
 	{
-		_solution = null;
 		_centroids = _initialCentroids.initialCentroids();
 		_start = System.currentTimeMillis();
 		_iterations = 1;
@@ -117,5 +131,10 @@ public class Heuristic
 	public ArrayList<Point> getCentroids()
 	{
 		return _centroids;
+	}
+	
+	public static void setRounds(int rounds)
+	{
+		_rounds = rounds;
 	}
 }

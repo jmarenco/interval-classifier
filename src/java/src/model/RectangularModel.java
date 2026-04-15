@@ -24,7 +24,7 @@ public class RectangularModel
 	private int[] classOf;
 	
 	private int _maxTime = 3600;
-	private boolean _verbose = true;
+	private boolean _verbose = false;
 	private boolean _summary = true;
 
 	private IloNumVar[][] z;
@@ -207,7 +207,7 @@ public class RectangularModel
 		    for(int j=0; j<n; ++j) if( classOf[j] == _instance.getPoint(i).getClassID() )
 		    	lhs = cplex.sum(lhs, z[i][j]);
 		    
-		    cplex.addEq(lhs, 1, "clus" + i);
+		    cplex.addGe(lhs, 1, "clus" + i);
 	    }
 	}
 	
