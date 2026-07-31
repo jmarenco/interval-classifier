@@ -317,6 +317,11 @@ public class Cluster
 		return instance.stream().filter(p -> p.getClassID() != this.getClassID() && this.covers(p)).collect(Collectors.toList());
 	}
 	
+	public int objective(Instance instance)
+	{
+		return (int)instance.stream().filter(p -> p.getClassID() != this.getClassID() && this.covers(p)).count();
+	}
+	
 	public double distanceToBorder(Point point)
 	{
 		if( point == null )

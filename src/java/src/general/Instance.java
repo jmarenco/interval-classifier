@@ -17,6 +17,8 @@ public class Instance
 	private ArrayList<Point> _points;
 	private Map<Integer, Integer> _clusters;
 	
+	public static double infinity = 10000;
+
 	public Instance(String name, int classes)
 	{
 		_name = name;
