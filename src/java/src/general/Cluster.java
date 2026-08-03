@@ -18,6 +18,12 @@ public class Cluster
 	{
 		_points = new HashSet<Point>();
 	}
+	
+	public Cluster(int classID)
+	{
+		_points = new HashSet<Point>();
+		_class = classID;
+	}
 
 	public static Cluster fromArray(Instance instance, int... indexes)
 	{
@@ -58,18 +64,19 @@ public class Cluster
 
 	public void add(Point point)
 	{
+		if( _class != -1 && this.getClassID() != point.getClassID() )
+			throw new RuntimeException("Point of class " + point.getClassID() + " added to class " + this.getClassID() + " cluster!");
+
 		if( _points.size() == 0 )
 		{
 			_min = new double[point.getDimension()];
 			_max = new double[point.getDimension()];
-			_class = point.getClassID();
+			
+			if( _class == -1 )
+				_class = point.getClassID();
 			
 			for(int t=0; t<point.getDimension(); ++t)
 				_min[t] = _max[t] = point.get(t); 
-		}
-		else if( this.getClassID() != point.getClassID() )
-		{
-			throw new RuntimeException("Point of class " + point.getClassID() + " added to class " + this.getClassID() + " cluster!");
 		}
 		else
 		{
@@ -281,7 +288,7 @@ public class Cluster
 		for(Point point: _points)
 			ret += (ret.length() > 0 ? ", " : "") + point.getId();
 		
-		return "{" + ret + "}";
+		return "{" + ret + "} #" + _class;
 	}
 
 	public boolean covers(Point p)

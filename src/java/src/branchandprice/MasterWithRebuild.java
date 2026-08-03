@@ -52,7 +52,7 @@ public class MasterWithRebuild implements Master
             // Define binding constraints
             _binding = new IloRange[_instance.getPoints()];
             for(int i=0; i<_instance.getPoints(); i++)
-                _binding[i] = _cplex.addGe(_cplex.linearIntExpr(), 0, "bind" + i);
+                _binding[i] = _cplex.addGe(_cplex.linearIntExpr(), 1, "bind" + i);
             
             // Define constraints on the number of clusters for each class
             _numberOfClusters = new IloRange[_instance.getClasses()];
@@ -61,7 +61,7 @@ public class MasterWithRebuild implements Master
             	_numberOfClusters[j] = _cplex.addGe(_cplex.linearIntExpr(), -_instance.getClusters(j), "clus" + j);
             
             // Collects all constraints into a single array
-            _allConstraints = new IloRange[_instance.getPoints() + 2];
+            _allConstraints = new IloRange[_instance.getPoints() + _instance.getClasses()];
 
             for(int i=0; i<_instance.getPoints(); i++)
             	_allConstraints[i] = _binding[i];
@@ -95,7 +95,7 @@ public class MasterWithRebuild implements Master
             double timeRemaining = Math.max(1, (timeLimit-System.currentTimeMillis()) / 1000.0);
             
             _cplex.setParam(IloCplex.Param.TimeLimit, timeRemaining); // set time limit in seconds
-//            _cplex.exportModel("/home/jmarenco/Desktop/master.lp");
+//            _cplex.exportModel("/home/javier/Escritorio/master.lp");
 
             boolean solved = _cplex.solve();
             _solvingTime += (System.currentTimeMillis() - start) / 1000.0;
@@ -164,10 +164,13 @@ public class MasterWithRebuild implements Master
     {
 		try
         {
-			Column column = Column.artificial(_instance);
-	    	addColumnToModel(column, _columns.size());
-	        _columns.add(column);
-	        
+			for(int j=0; j<_instance.getClasses(); ++j)
+			{
+				Column column = Column.artificial(_instance, j);
+		    	addColumnToModel(column, _columns.size());
+		        _columns.add(column);
+			}
+			
 	        if( _initialSingletons == true )
 	        {
 	        	for(int i=0; i<_instance.getPoints(); ++i)

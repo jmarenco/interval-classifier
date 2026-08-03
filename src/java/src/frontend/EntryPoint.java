@@ -1,5 +1,6 @@
 package frontend;
 
+import branchandprice.Solver;
 import general.Instance;
 import general.RandomInstance;
 import general.Solution;
@@ -9,7 +10,7 @@ import model.RectangularModel;
 
 public class EntryPoint
 {
-	private static String _version = "0.07";
+	private static String _version = "0.08";
 	
 	public static void main(String[] args)
 	{
@@ -28,28 +29,34 @@ public class EntryPoint
 		int seed = argmap.intArg("-seed", 5);
 		
 		Instance instance = RandomInstance.generate(dim, points, clusters, disp, seed);
+		Solution solution = null;
+
 		Heuristic.setRounds(argmap.intArg("-rounds", 10));
 		Heuristic.setMaxTime(argmap.intArg("-maxtime", 3600));
 		RectangularModel.setMaxTime(argmap.intArg("-maxtime", 3600));
-
-		Heuristic heuristic = Heuristics.basic(instance);
-		Solution solution1 = heuristic.run();
 		
-		Solution solution2 = null;
-		
-		if( argmap.containsArg("-nomip") == false )
+		if( argmap.stringArg("-m", "xxx").equals("model") )
 		{
 			RectangularModel model = new RectangularModel(instance);
-			solution2 = model.run();
+			solution = model.run();
+		}
+
+		if( argmap.stringArg("-m", "xxx").equals("kmeans") )
+		{
+			Heuristic heuristic = Heuristics.basic(instance);
+			solution = heuristic.run();
+		}
+
+		if( argmap.stringArg("-m", "xxx").equals("bap") )
+		{
+			Solver solver = new Solver(instance);
+			solution = solver.solve();
 		}
 		
-		if( argmap.containsArg("-show") )
+		if( argmap.containsArg("-show"))
 		{
 			new Viewer(instance, "Instance");
-			new Viewer(instance, solution1, heuristic.getCentroids(), "Heuristic solution");
-			
-			if( solution2 != null )
-				new Viewer(instance, solution2, "Model solution");
+			new Viewer(instance, solution, "Solution");
 		}
 	}
 	
@@ -57,6 +64,7 @@ public class EntryPoint
 	{
 		System.out.println("Interval Classifier v" + _version);
 		System.out.println();
+		System.out.println("-m [s]       Method [model|kmeans|bap]");
 		System.out.println("-d [i]       Dimension");
 		System.out.println("-n [i]       Number of points");
 		System.out.println("-c [i]       Number of clusters in each class");
@@ -65,7 +73,6 @@ public class EntryPoint
 		System.out.println("-rounds [i]  Heuristic rounds");
 		System.out.println("-maxtime [i] Time limit in seconds");
 		System.out.println("-show        Show solutions");
-		System.out.println("-nomip       Do not run MIP model");
 		
 	}
 }

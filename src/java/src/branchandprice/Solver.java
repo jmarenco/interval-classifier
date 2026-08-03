@@ -110,6 +110,7 @@ public class Solver
 				newColumns = false;
 
 //				System.out.println("debug counter = " + dbg);
+//				System.out.println(" - Master Obj: " + _master.getObjValue());
 				
 				if( _master.isOptimal() == true )
 				{

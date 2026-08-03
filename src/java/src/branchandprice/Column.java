@@ -17,9 +17,9 @@ public class Column
 		_artificial = artificial;
 	}
 	
-	public static Column artificial(Instance instance)
+	public static Column artificial(Instance instance, int classID)
 	{
-		return new Column(Cluster.withAllPoints(instance, 0), 1000, true);
+		return new Column(Cluster.withAllPoints(instance, classID), 1000, true);
 	}
 	
 	public static Column regular(Cluster cluster, Instance instance)

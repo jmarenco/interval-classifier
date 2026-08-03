@@ -70,6 +70,7 @@ public class PricingModel extends Pricing
     	    createOrderingConstraints();
     	    createBindingLRWConstraints();
     	    createBindingWZConstraints();
+    	    createNonemptyConstraints();
     		createObjective();
 
             branchingConstraints = new HashMap<BranchingDecision, IloConstraint>();
@@ -196,6 +197,16 @@ public class PricingModel extends Pricing
 		}
 	}
 
+	private void createNonemptyConstraints() throws IloException
+	{
+		IloNumExpr lhs = cplex.linearIntExpr();
+
+		for(int i=0; i<p; ++i) if( _class == _instance.getPoint(i).getClassID() )
+			lhs = cplex.sum(lhs, z[i]);
+			
+		cplex.addGe(lhs, 1);
+	}
+
 	private void createObjective() throws IloException
 	{
 		IloNumExpr fobj = cplex.linearNumExpr();
@@ -213,7 +224,7 @@ public class PricingModel extends Pricing
         try
         {
             cplex.setParam(IloCplex.Param.TimeLimit, timeLimit); //set time limit in seconds
-//            cplex.exportModel("/home/jmarenco/Desktop/pricing.lp");
+//            cplex.exportModel("/home/javier/Escritorio/pricing" + _class + ".lp");
 
        		// Solve the problem and check the solution status
             double start = System.currentTimeMillis();
@@ -254,25 +265,26 @@ public class PricingModel extends Pricing
 //            }
 
             // Generate new column if it has negative reduced cost
-            if( cplex.getStatus() != IloCplex.Status.Infeasible)
+            if( cplex.getStatus() != IloCplex.Status.Infeasible )
             { 
             	int nsols = cplex.getSolnPoolNsolns();
             	int found = 0;
             	for (int j = 0; j < nsols; j++)
             	{
+//            		System.out.println(" => Pricing obj: " + cplex.getObjValue(j) + " - Dual of class constr: " + _master.getDuals()[p + _class]);
 					if (cplex.getObjValue(j) <= _reducedCostThreshold)
 					{ 
-		                Cluster cluster = new Cluster();
+		                Cluster cluster = new Cluster(_class);
 		                double[] values = cplex.getValues(z, j);
 		
 		                for(int i=0; i<_instance.getPoints(); ++i)
 		                {
-		                  	if( Math.abs(values[i] - 1) < _variableThreshold )
+		                  	if( Math.abs(values[i] - 1) < _variableThreshold && _instance.getPoint(i).getClassID() == _class )
 		                   		cluster.add(_instance.getPoint(i));
 		                }
 		                    	
 		                newPatterns.add(cluster);
-		//                System.out.println(" -> " + cluster);
+//		                System.out.println(" -> " + cluster);
 		                
 		                found++;
 		                if (found >= getMaxColsPerPricing())
@@ -301,10 +313,10 @@ public class PricingModel extends Pricing
     		for(int i=0; i<p; ++i) if( _class != _instance.getPoint(i).getClassID() )
     			fobj = cplex.sum(fobj, z[i]);
     		
-    		for(int i=0; i<p; ++i)
+    		for(int i=0; i<p; ++i) if( _class == _instance.getPoint(i).getClassID() )
     			fobj = cplex.sum(fobj, cplex.prod(-dualCosts[i], z[i]));
     		
-    		fobj = cplex.sum(fobj, dualCosts[p]);
+    		fobj = cplex.sum(fobj, dualCosts[p + _class]);
             obj.setExpr(fobj);
             
 //            System.out.println("Pricing obj set: " + obj);
