@@ -10,7 +10,7 @@ import model.RectangularModel;
 
 public class EntryPoint
 {
-	private static String _version = "0.08";
+	private static String _version = "0.09";
 	private static ArgMap _argmap;
 	
 	public static void main(String[] args)
@@ -38,6 +38,7 @@ public class EntryPoint
 		RectangularModel.setVerbose(_argmap.containsArg("-verbose"));
 		Solver.setMaxTime(_argmap.intArg("-maxtime", 3600));
 		Solver.setVerbose(_argmap.containsArg("-verbose"));
+		Solver.setBrancher(_argmap.stringArg("-branch", "rf").equals("rf") ? Solver.Brancher.RyanFoster : Solver.Brancher.Side);
 		
 		if( _argmap.stringArg("-m", "xxx").equals("model") )
 		{
@@ -76,6 +77,7 @@ public class EntryPoint
 		System.out.println("-seed [i]    Random seed");
 		System.out.println("-rounds [i]  Heuristic rounds");
 		System.out.println("-maxtime [i] Time limit in seconds");
+		System.out.println("-branch [s]  Branching strategy [rf|side]");
 		System.out.println("-verbose     Show log");
 		System.out.println("-show        Show solutions");
 	}

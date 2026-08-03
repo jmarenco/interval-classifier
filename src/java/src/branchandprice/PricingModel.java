@@ -345,6 +345,9 @@ public class PricingModel extends Pricing
     
     private void performBranchingOnSide(BranchOnSide sc)
     {
+    	if( _instance.getPoint(sc.getPoint()).getClassID() != _class )
+    		return;
+    	
         try
         {
 //        	System.out.println("Pricing: Perform branching " + sc);
