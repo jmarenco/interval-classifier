@@ -1,5 +1,6 @@
 package model;
 
+import frontend.EntryPoint;
 import general.Cluster;
 import general.Instance;
 import general.Solution;
@@ -240,13 +241,15 @@ public class RectangularModel
 		}
 		else
 		{
+			System.out.print("v" + EntryPoint.getVersion() + " | ");
 			System.out.print(_instance.getName() + " | MIP | ");
 			System.out.print(cplex.getStatus() + " | ");
 			System.out.print("Obj: " + String.format("%6.4f", cplex.getObjValue()) + " | ");
 			System.out.print(String.format("%6.2f", (System.currentTimeMillis() - start) / 1000.0) + " sec. | ");
 			System.out.print(cplex.getNnodes() + " nodes | ");
 			System.out.print(((cplex.getStatus() == Status.Optimal || cplex.getStatus() == Status.Feasible) && cplex.getMIPRelativeGap() < 1e30 ? String.format("%6.2f", 100 * cplex.getMIPRelativeGap()) + " % | " : "  **** | "));
-			System.out.print(cplex.getNcuts(IloCplex.CutType.User) + " cuts | ");
+			System.out.print(cplex.getNcuts(IloCplex.CutType.User) + " cuts | | | | | ");
+			System.out.print(EntryPoint.getArgs());
 			System.out.println();
 		}
 	}
@@ -274,7 +277,7 @@ public class RectangularModel
 		cplex.end();
 	}
 	
-	public void setVerbose(boolean verbose)
+	public static void setVerbose(boolean verbose)
 	{
 		_verbose = verbose;
 	}

@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
+
+import frontend.EntryPoint;
+
 import java.util.HashMap;
 
 import general.Cluster;
@@ -33,7 +36,7 @@ public class Solver
 	
 	private static long _timeLimit = 3600;
 	private static boolean _verbose = true;
-	private static boolean _summary = false;
+	private static boolean _summary = true;
 	private static Pricer _pricer = Pricer.Model;
 	private static Pricer _rootPricer = Pricer.None;
 	private static Brancher _brancher = Brancher.Side;
@@ -88,7 +91,7 @@ public class Solver
 		while( _openNodes.size() > 0 && elapsedTime() < _timeLimit )
 		{
 			Node current = nextNode();
-			System.out.println("Solving node " + current.getId() + ", " + current.getBranchingDecision() + (current.getParent() != null ? " - Parent: Node " + current.getParent().getId() : ""));
+//			System.out.println("Solving node " + current.getId() + ", " + current.getBranchingDecision() + (current.getParent() != null ? " - Parent: Node " + current.getParent().getId() : ""));
 
 //			Node aux = current;
 //			while( aux != null )
@@ -283,22 +286,19 @@ public class Solver
 		if (_pricing != _exactPricing)
 			pricingTime += _exactPricing.getSolvingTime();
 		
+		System.out.print("v" + EntryPoint.getVersion() + " | ");
 		System.out.print(_instance.getName() + " | B&P | ");
 		System.out.print(_openNodes.size() == 0 ? "Optimal | " : "Feasible | ");
 		System.out.print("Obj: " + String.format("%6.4f", _ub) + " | ");
 		System.out.print(String.format("%6.2f", elapsedTime()) + " sec. | ");
 		System.out.print(_nodes.size() + " nodes | ");
 		System.out.print(String.format("%6.2f", gap) + " % | ");
-		System.out.print(" 0 cuts | ");
+		System.out.print(" | ");
 		System.out.print(_master.getColumns().size() + " cols | ");
 		System.out.print("M: " + String.format("%6.2f", _master.getSolvingTime()) + " sec. | ");
 		System.out.print("P: " + String.format("%6.2f", pricingTime) + " sec. | ");
-		System.out.print(PricingModel.stopWhenNegative() ? "NegPr | " : "      | ");
-		System.out.print("MT: " + _timeLimit + " | ");
-		System.out.print("Pr: " + (_pricer == Pricer.Model ? "Model" : "Heur")  + " | ");
-		System.out.print("Br: " + (_brancher == Brancher.Side ? "Side" : "RF")  + " | ");
-		System.out.print(_rootPricer == Pricer.Heuristic ? "HC: " + _rootPricing.getGeneratedColumns() : "");
-		System.out.print(MasterWithRebuild.getInitialSingletons() ? " (is) | " : " | ");
+		System.out.print(_rootPricer == Pricer.Heuristic ? "HC: " + _rootPricing.getGeneratedColumns() + " | ": " | ");
+		System.out.print(EntryPoint.getArgs());
 		System.out.println();
 	}	
 

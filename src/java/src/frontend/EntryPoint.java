@@ -11,49 +11,52 @@ import model.RectangularModel;
 public class EntryPoint
 {
 	private static String _version = "0.08";
+	private static ArgMap _argmap;
 	
 	public static void main(String[] args)
 	{
-		ArgMap argmap = new ArgMap(args);
+		_argmap = new ArgMap(args);
 		
-		if( argmap.containsArg("-help") )
+		if( _argmap.containsArg("-help") )
 		{
 			showParameters();
 			return;
 		}
 		
-		int dim = argmap.intArg("-d", 2);
-		int points = argmap.intArg("-n", 50);
-		int clusters = argmap.intArg("-c", 3);
-		double disp = argmap.doubleArg("-disp", 0.5);
-		int seed = argmap.intArg("-seed", 5);
+		int dim = _argmap.intArg("-d", 2);
+		int points = _argmap.intArg("-n", 50);
+		int clusters = _argmap.intArg("-c", 3);
+		double disp = _argmap.doubleArg("-disp", 0.5);
+		int seed = _argmap.intArg("-seed", 5);
 		
 		Instance instance = RandomInstance.generate(dim, points, clusters, disp, seed);
 		Solution solution = null;
 
-		Heuristic.setRounds(argmap.intArg("-rounds", 10));
-		Heuristic.setMaxTime(argmap.intArg("-maxtime", 3600));
-		RectangularModel.setMaxTime(argmap.intArg("-maxtime", 3600));
+		Heuristic.setRounds(_argmap.intArg("-rounds", 10));
+		Heuristic.setMaxTime(_argmap.intArg("-maxtime", 3600));
+		RectangularModel.setMaxTime(_argmap.intArg("-maxtime", 3600));
+		RectangularModel.setVerbose(_argmap.containsArg("-verbose"));
+		Solver.setVerbose(_argmap.containsArg("-verbose"));
 		
-		if( argmap.stringArg("-m", "xxx").equals("model") )
+		if( _argmap.stringArg("-m", "xxx").equals("model") )
 		{
 			RectangularModel model = new RectangularModel(instance);
 			solution = model.run();
 		}
 
-		if( argmap.stringArg("-m", "xxx").equals("kmeans") )
+		if( _argmap.stringArg("-m", "xxx").equals("kmeans") )
 		{
 			Heuristic heuristic = Heuristics.basic(instance);
 			solution = heuristic.run();
 		}
 
-		if( argmap.stringArg("-m", "xxx").equals("bap") )
+		if( _argmap.stringArg("-m", "xxx").equals("bap") )
 		{
 			Solver solver = new Solver(instance);
 			solution = solver.solve();
 		}
 		
-		if( argmap.containsArg("-show"))
+		if( _argmap.containsArg("-show"))
 		{
 			new Viewer(instance, "Instance");
 			new Viewer(instance, solution, "Solution");
@@ -72,7 +75,17 @@ public class EntryPoint
 		System.out.println("-seed [i]    Random seed");
 		System.out.println("-rounds [i]  Heuristic rounds");
 		System.out.println("-maxtime [i] Time limit in seconds");
+		System.out.println("-verbose     Show log");
 		System.out.println("-show        Show solutions");
-		
+	}
+	
+	public static String getVersion()
+	{
+		return _version;
+	}
+	
+	public static ArgMap getArgs()
+	{
+		return _argmap;
 	}
 }

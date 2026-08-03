@@ -2,6 +2,7 @@ package heuristic;
 
 import java.util.ArrayList;
 
+import frontend.EntryPoint;
 import general.Instance;
 import general.Point;
 import general.Solution;
@@ -127,11 +128,13 @@ public class Heuristic
 
 	private void showSummary()
 	{
+		System.out.print("v" + EntryPoint.getVersion() + " | ");
 		System.out.print(_instance.getName() + " | Heur | Feasible | ");
 		System.out.print("Obj: " + _solution.misclassified(_instance) + " | ");
 		System.out.print(String.format("%6.2f", (System.currentTimeMillis() - _start) / 1000.0) + " sec. | ");
-		System.out.print(_rounds > 0 ? String.format("%.2f", _iterations / (double)_rounds) + " its | " : " | ");
-		System.out.print(_rounds + " rounds | | ");
+		System.out.print(_rounds > 0 ? String.format("%.2f", _iterations / (double)_rounds) + " its | | " : " | | ");
+		System.out.print(_rounds + " rounds | | | | |");
+		System.out.print(EntryPoint.getArgs());
 		System.out.println();
 	}
 	
