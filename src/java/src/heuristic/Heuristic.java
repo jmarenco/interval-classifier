@@ -80,7 +80,7 @@ public class Heuristic
 		_rounds = 1;
 		_solution = singleRun();
 		
-		for(int i=1; i<_maxRounds && (System.currentTimeMillis() - _start) / 1000 <= _maxTime; ++i)
+		for(int i=1; i<_maxRounds && elapsedTime() <= _maxTime; ++i)
 		{
 			Solution actual = singleRun();
 			if( actual.misclassified(_instance) < _solution.misclassified(_instance) )
@@ -91,6 +91,11 @@ public class Heuristic
 		
 		showSummary();
 		return _solution;
+	}
+
+	private double elapsedTime()
+	{
+		return (System.currentTimeMillis() - _start) / 1000.0;
 	}
 	
 	public Solution singleRun()
@@ -131,9 +136,9 @@ public class Heuristic
 		System.out.print("v" + EntryPoint.getVersion() + " | ");
 		System.out.print(_instance.getName() + " | Heur | Feasible | ");
 		System.out.print("Obj: " + _solution.misclassified(_instance) + " | ");
-		System.out.print(String.format("%6.2f", (System.currentTimeMillis() - _start) / 1000.0) + " sec. | ");
+		System.out.print(String.format("%6.2f", elapsedTime()) + " sec. | ");
 		System.out.print(_rounds > 0 ? String.format("%.2f", _iterations / (double)_rounds) + " its | | " : " | | ");
-		System.out.print(_rounds + " rounds | | | | |");
+		System.out.print(_rounds + " rounds | | | | | ");
 		System.out.print(EntryPoint.getArgs());
 		System.out.println();
 	}

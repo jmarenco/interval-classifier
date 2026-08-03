@@ -39,7 +39,7 @@ public class Solver
 	private static boolean _summary = true;
 	private static Pricer _pricer = Pricer.Model;
 	private static Pricer _rootPricer = Pricer.None;
-	private static Brancher _brancher = Brancher.Side;
+	private static Brancher _brancher = Brancher.RyanFoster;
 
 	public Solver(Instance instance)
 	{
@@ -88,7 +88,7 @@ public class Solver
 		_openNodes.add(root);
 		
 		// Main loop
-		while( _openNodes.size() > 0 && elapsedTime() < _timeLimit )
+		while( _openNodes.size() > 0 && getDualBound() + 0.001 < _ub && elapsedTime() < _timeLimit )
 		{
 			Node current = nextNode();
 //			System.out.println("Solving node " + current.getId() + ", " + current.getBranchingDecision() + (current.getParent() != null ? " - Parent: Node " + current.getParent().getId() : ""));
@@ -240,7 +240,7 @@ public class Solver
 	
 	public double getDualBound()
 	{
-		return _openNodes.stream().mapToDouble(n -> _dualBound.containsKey(n) ? _dualBound.get(n) : 1000.0).min().orElse(_ub);
+		return _openNodes.stream().mapToDouble(n -> _dualBound.containsKey(n) ? _dualBound.get(n) : 0.0).min().orElse(_ub);
 	}
 	
 	public double elapsedTime()
@@ -317,7 +317,7 @@ public class Solver
 		return _master;
 	}
 	
-	public static void setTimeLimit(long timeLimit)
+	public static void setMaxTime(long timeLimit)
 	{
 		_timeLimit = timeLimit;
 	}

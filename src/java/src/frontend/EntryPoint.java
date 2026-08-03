@@ -36,6 +36,7 @@ public class EntryPoint
 		Heuristic.setMaxTime(_argmap.intArg("-maxtime", 3600));
 		RectangularModel.setMaxTime(_argmap.intArg("-maxtime", 3600));
 		RectangularModel.setVerbose(_argmap.containsArg("-verbose"));
+		Solver.setMaxTime(_argmap.intArg("-maxtime", 3600));
 		Solver.setVerbose(_argmap.containsArg("-verbose"));
 		
 		if( _argmap.stringArg("-m", "xxx").equals("model") )
