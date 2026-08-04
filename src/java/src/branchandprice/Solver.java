@@ -279,8 +279,6 @@ public class Solver
 	
 	private void showSummary()
 	{
-		double dualBound = getDualBound();
-		double gap = _ub > 0 ? 100 * (_ub - dualBound) / _ub : 100;
 		double pricingTime = _pricing.getSolvingTime() + (_rootPricing != null && _rootPricing != _pricing? _rootPricing.getSolvingTime() : 0);
 		
 		if (_pricing != _exactPricing)
@@ -288,11 +286,11 @@ public class Solver
 		
 		System.out.print("v" + EntryPoint.getVersion() + " | ");
 		System.out.print(_instance.getName() + " | B&P | ");
-		System.out.print(_openNodes.size() == 0 ? "Optimal | " : "Feasible | ");
+		System.out.print(_openNodes.size() == 0 || relativeGap() == 0 ? "Optimal | " : "Feasible | ");
 		System.out.print("Obj: " + String.format("%6.4f", _ub) + " | ");
 		System.out.print(String.format("%6.2f", elapsedTime()) + " sec. | ");
 		System.out.print(_nodes.size() + " nodes | ");
-		System.out.print(String.format("%6.2f", gap) + " % | ");
+		System.out.print(String.format("%6.2f", relativeGap()) + " % | ");
 		System.out.print(" | ");
 		System.out.print(_master.getColumns().size() + " cols | ");
 		System.out.print("M: " + String.format("%6.2f", _master.getSolvingTime()) + " sec. | ");
@@ -301,6 +299,16 @@ public class Solver
 		System.out.print(EntryPoint.getArgs());
 		System.out.println();
 	}	
+	
+	private double relativeGap()
+	{
+		double dualBound = getDualBound();
+		
+		if( _ub == 0 && dualBound == 0 )
+			return 0;
+		
+		return _ub > 0 ? 100 * (_ub - dualBound) / _ub : 100;
+	}
 
 	public ArrayList<Cluster> getSolution()
 	{
