@@ -45,6 +45,7 @@ public class Heuristic
 	private static int _maxIterations = 100;
 	private static int _maxRounds = 100;
 	private static int _maxTime = 3600;
+	private static boolean _showSummary = true;
 	
 	public Heuristic(Instance instance)
 	{
@@ -88,8 +89,10 @@ public class Heuristic
 			
 			_rounds++;
 		}
+
+		if( _showSummary == true )
+			showSummary();
 		
-		showSummary();
 		return _solution;
 	}
 
@@ -156,5 +159,10 @@ public class Heuristic
 	public static void setMaxTime(int timeLimit)
 	{
 		_maxTime = timeLimit;
+	}
+	
+	public static void setShowSummary(boolean value)
+	{
+		_showSummary = value;
 	}
 }

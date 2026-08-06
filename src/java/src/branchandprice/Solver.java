@@ -24,6 +24,7 @@ public class Solver
 	
 	private long _start;
 	private double _ub;
+	private int _totalIterations;
 	
 	private ArrayList<Node> _nodes;
 	private ArrayList<Node> _openNodes;
@@ -55,6 +56,7 @@ public class Solver
 		_dualBound = new HashMap<Node, Double>();
 		_solutions = new ArrayList<Solution>();
 		_start = System.currentTimeMillis();
+		_totalIterations = 0;
 		
 		if( _brancher == Brancher.Side )
 			_branching = new BranchingOnSide(_instance);
@@ -105,6 +107,7 @@ public class Solver
 			boolean incumbentUpdated = false;
 			boolean newColumns = true;
 			int addedColumns = 0;
+			int iterations = 0;
 			
 			while( newColumns == true )
 			{
@@ -142,6 +145,8 @@ public class Solver
 	
 					newColumns = added.size() > 0;
 					addedColumns += added.size();
+					iterations += 1;
+					_totalIterations += 1;
 				}
 			}
 			
@@ -182,7 +187,7 @@ public class Solver
 			last = current;
 			
 			if( _verbose == true )
-				showStatistics(current, addedColumns, incumbentUpdated);
+				showStatistics(current, iterations, addedColumns, incumbentUpdated);
 		}
 
 		if( _summary == true )
@@ -253,7 +258,7 @@ public class Solver
 		return _timeLimit - (System.currentTimeMillis() - _start) / 1000;
 	}
 	
-	private void showStatistics(Node current, int addedColumns, boolean incumbentUpdated)
+	private void showStatistics(Node current, int iterations, int addedColumns, boolean incumbentUpdated)
 	{
 		double dualBound = getDualBound();
 		double gap = _ub > 0 ? 100 * (_ub - dualBound) / _ub : 100;
@@ -269,7 +274,7 @@ public class Solver
 		
 		if( current != null )
 		{
-			System.out.print(" (" + addedColumns + " new) | ");
+			System.out.print(" (" + addedColumns + " new, " + iterations + " its) | ");
 			System.out.print("Cur: " + current.getId() + ", H: " + current.getHeight() + " - ");
 			System.out.print(current.getBranchingDecision());
 		}
@@ -292,7 +297,7 @@ public class Solver
 		System.out.print(_nodes.size() + " nodes | ");
 		System.out.print(String.format("%6.2f", relativeGap()) + " % | ");
 		System.out.print(" | ");
-		System.out.print(_master.getColumns().size() + " cols | ");
+		System.out.print(_master.getColumns().size() + " cols, " + _totalIterations + " its | ");
 		System.out.print("M: " + String.format("%6.2f", _master.getSolvingTime()) + " sec. | ");
 		System.out.print("P: " + String.format("%6.2f", pricingTime) + " sec. | ");
 		System.out.print(_rootPricer == Pricer.Heuristic ? "HC: " + _rootPricing.getGeneratedColumns() + " | ": " | ");

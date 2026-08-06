@@ -77,9 +77,9 @@ public class EntryPoint
 	
 	private static void processParameters()
 	{
-		
 		Heuristic.setRounds(_argmap.intArg("-rounds", 10));
 		Heuristic.setMaxTime(_argmap.intArg("-maxtime", 3600));
+    	Heuristic.setShowSummary(_argmap.stringArg("-m", "xxx").equals("kmeans"));
 		RectangularModel.setMaxTime(_argmap.intArg("-maxtime", 3600));
 		RectangularModel.setVerbose(_argmap.containsArg("-verbose"));
 		MasterWithRebuild.setInitialSingletons(_argmap.containsArg("-is"));

@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.HashMap;
 import general.Instance;
 import general.Solution;
+import heuristic.Heuristic;
 import heuristic.Heuristics;
 import general.Cluster;
 
