@@ -71,6 +71,7 @@ public class EntryPoint
 		System.out.println("-price [s]   Pricing strategy [zw|zwb]");
 		System.out.println("-is          Initial singleton columns");
 		System.out.println("-ik          Initial columns from k-means heuristic");
+		System.out.println("-ds [f]      Dual stabilization with factor f");
 		System.out.println("-verbose     Show log");
 		System.out.println("-show        Show solutions");
 	}
@@ -84,6 +85,7 @@ public class EntryPoint
 		RectangularModel.setVerbose(_argmap.containsArg("-verbose"));
 		MasterWithRebuild.setInitialSingletons(_argmap.containsArg("-is"));
 		MasterWithRebuild.setInitialkMeans(_argmap.containsArg("-ik"));
+		MasterWithRebuild.setDualStabilization(_argmap.doubleArg("-ds", 0));
 		Solver.setMaxTime(_argmap.intArg("-maxtime", 3600));
 		Solver.setVerbose(_argmap.containsArg("-verbose"));
 		Solver.setPricingLog(_argmap.containsArg("-pricinglog"));

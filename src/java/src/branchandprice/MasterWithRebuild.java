@@ -24,9 +24,12 @@ public class MasterWithRebuild implements Master
 
     private double _solvingTime = 0;
     private double _objValue;
+    private double[] _previousDuals = null;
+    private double[] _duals = null;
     
     private static boolean _initialSingletons = false;
     private static boolean _initialkmeans = false;
+    private static double _dualStabilization = 0;
 
     public MasterWithRebuild(Instance instance)
     {
@@ -106,6 +109,7 @@ public class MasterWithRebuild implements Master
 
             _solvingTime += (System.currentTimeMillis() - start) / 1000.0;
             _objValue = _cplex.getObjValue();
+            _duals = null;
 
             // Solve the model
             if( solved == false || _cplex.getStatus() != IloCplex.Status.Optimal )
@@ -152,18 +156,27 @@ public class MasterWithRebuild implements Master
     // Extracts information from the master problem required by the pricing problems
     public double[] getDuals()
     {
-    	double[] ret = null;
+    	if( _duals != null )
+    		return _duals;
     	
         try
         {
-            ret = _cplex.getDuals(_allConstraints);
+            _duals = _cplex.getDuals(_allConstraints);
+            
+            if( _dualStabilization > 0 && _previousDuals != null )
+            {
+            	for(int i=0; i<_duals.length && i<_previousDuals.length; ++i)
+            		_duals[i] = (1 - _dualStabilization) * _duals[i] + _dualStabilization * _previousDuals[i];
+            }
+
+            _previousDuals = _duals; // This or the original duals?
         }
         catch (IloException e)
         {
             e.printStackTrace();
         }
         
-        return ret;
+        return _duals;
     }
     
     // Adds columns ensuring that a feasible solution exists
@@ -372,5 +385,13 @@ public class MasterWithRebuild implements Master
     public static void setInitialkMeans(boolean value)
     {
     	_initialkmeans = value;
+    }
+    
+    public static void setDualStabilization(double value)
+    {
+    	if( value < 0 || value >= 1 )
+    		throw new RuntimeException("Invalid factor for dual stabilization: " + value);
+
+    	_dualStabilization = value;
     }
 }

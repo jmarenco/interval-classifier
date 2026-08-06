@@ -271,8 +271,8 @@ public class Solver
 		System.out.print((_pricing.getGeneratedColumns() - _pricedColumns) + " new | ");
 		System.out.print(String.format("%7.2f", _pricing.getSolvingTime()) + " total sec | ");
 		System.out.print(String.format("%7.2f", _pricing.getSolvingTime() - _pricingTime) + " sec | ");
-		System.out.print("Obj: " + String.format("%7.4f", _master.getObjValue()) + " | ");
-		System.out.print("MLB: " + String.format("%7.4f", _pricing.getMasterBound()));
+		System.out.print("Obj: " + String.format("%11.4f", _master.getObjValue()) + " | ");
+		System.out.print("MLB: " + String.format("%11.4f", _pricing.getMasterBound()));
 		System.out.println();
 		
 		_pricingTime = _pricing.getSolvingTime(); // These statistics are cumulative
