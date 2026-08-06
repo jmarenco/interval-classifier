@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import general.Instance;
+import general.Solution;
+import heuristic.Heuristics;
 import general.Cluster;
 
 public class MasterWithRebuild implements Master
@@ -22,6 +24,7 @@ public class MasterWithRebuild implements Master
     private double _solvingTime = 0;
     
     private static boolean _initialSingletons = false;
+    private static boolean _initialkmeans = false;
 
     public MasterWithRebuild(Instance instance)
     {
@@ -165,20 +168,19 @@ public class MasterWithRebuild implements Master
 		try
         {
 			for(int j=0; j<_instance.getClasses(); ++j)
-			{
-				Column column = Column.artificial(_instance, j);
-		    	addColumnToModel(column, _columns.size());
-		        _columns.add(column);
-			}
+				addColumn(Column.artificial(_instance, j));
 			
 	        if( _initialSingletons == true )
 	        {
 	        	for(int i=0; i<_instance.getPoints(); ++i)
-	        	{
-	    			Column singleton = Column.singleton(_instance.getPoint(i));
-	    	    	addColumnToModel(singleton, _columns.size());
-	    	        _columns.add(singleton);
-	        	}
+	    			addColumn(Column.singleton(_instance.getPoint(i)));
+	        }
+	        
+	        if( _initialkmeans == true )
+	        {
+				Solution heuristic = Heuristics.basic(_instance).run();
+				for(Cluster cluster: heuristic.getClusters())
+					addColumn(Column.regular(cluster, _instance));
 	        }
         }
         catch (IloException e)
@@ -203,6 +205,12 @@ public class MasterWithRebuild implements Master
         {
             e.printStackTrace();
         }
+    }
+    
+    private void addColumn(Column column) throws IloException
+    {
+    	addColumnToModel(column, _columns.size());
+        _columns.add(column);
     }
     
     private void addColumnToModel(Column column, int index) throws IloException
@@ -366,8 +374,8 @@ public class MasterWithRebuild implements Master
     	_initialSingletons = value;
     }
     
-    public static boolean getInitialSingletons()
+    public static void setInitialkMeans(boolean value)
     {
-    	return _initialSingletons;
+    	_initialkmeans = value;
     }
 }

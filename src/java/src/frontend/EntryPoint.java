@@ -1,5 +1,6 @@
 package frontend;
 
+import branchandprice.MasterWithRebuild;
 import branchandprice.PricingModel;
 import branchandprice.Solver;
 import general.Instance;
@@ -11,7 +12,7 @@ import model.RectangularModel;
 
 public class EntryPoint
 {
-	private static String _version = "0.10";
+	private static String _version = "0.11";
 	private static ArgMap _argmap;
 	
 	public static void main(String[] args)
@@ -68,6 +69,8 @@ public class EntryPoint
 		System.out.println("-maxtime [i] Time limit in seconds");
 		System.out.println("-branch [s]  Branching strategy [rf|side]");
 		System.out.println("-price [s]   Pricing strategy [zw|zwb]");
+		System.out.println("-is          Initial singleton columns");
+		System.out.println("-ik          Initial columns from k-means heuristic");
 		System.out.println("-verbose     Show log");
 		System.out.println("-show        Show solutions");
 	}
@@ -79,6 +82,8 @@ public class EntryPoint
 		Heuristic.setMaxTime(_argmap.intArg("-maxtime", 3600));
 		RectangularModel.setMaxTime(_argmap.intArg("-maxtime", 3600));
 		RectangularModel.setVerbose(_argmap.containsArg("-verbose"));
+		MasterWithRebuild.setInitialSingletons(_argmap.containsArg("-is"));
+		MasterWithRebuild.setInitialkMeans(_argmap.containsArg("-ik"));
 		Solver.setMaxTime(_argmap.intArg("-maxtime", 3600));
 		Solver.setVerbose(_argmap.containsArg("-verbose"));
 		Solver.setBrancher(_argmap.stringArg("-branch", "rf").equals("rf") ? Solver.Brancher.RyanFoster : Solver.Brancher.Side);
