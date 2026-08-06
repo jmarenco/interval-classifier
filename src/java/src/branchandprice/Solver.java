@@ -354,4 +354,9 @@ public class Solver
 	{
 		_brancher = brancher;
 	}
+
+	public static Brancher getBrancher()
+	{
+		return _brancher;
+	}
 }

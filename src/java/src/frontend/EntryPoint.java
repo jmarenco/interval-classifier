@@ -1,5 +1,6 @@
 package frontend;
 
+import branchandprice.PricingModel;
 import branchandprice.Solver;
 import general.Instance;
 import general.RandomInstance;
@@ -10,7 +11,7 @@ import model.RectangularModel;
 
 public class EntryPoint
 {
-	private static String _version = "0.09";
+	private static String _version = "0.10";
 	private static ArgMap _argmap;
 	
 	public static void main(String[] args)
@@ -23,23 +24,11 @@ public class EntryPoint
 			return;
 		}
 		
-		int dim = _argmap.intArg("-d", 2);
-		int points = _argmap.intArg("-n", 50);
-		int clusters = _argmap.intArg("-c", 3);
-		double disp = _argmap.doubleArg("-disp", 0.5);
-		int seed = _argmap.intArg("-seed", 5);
-		
-		Instance instance = RandomInstance.generate(dim, points, clusters, disp, seed);
+		processParameters();
+
+		Instance instance = getInstance();
 		Solution solution = null;
 
-		Heuristic.setRounds(_argmap.intArg("-rounds", 10));
-		Heuristic.setMaxTime(_argmap.intArg("-maxtime", 3600));
-		RectangularModel.setMaxTime(_argmap.intArg("-maxtime", 3600));
-		RectangularModel.setVerbose(_argmap.containsArg("-verbose"));
-		Solver.setMaxTime(_argmap.intArg("-maxtime", 3600));
-		Solver.setVerbose(_argmap.containsArg("-verbose"));
-		Solver.setBrancher(_argmap.stringArg("-branch", "rf").equals("rf") ? Solver.Brancher.RyanFoster : Solver.Brancher.Side);
-		
 		if( _argmap.stringArg("-m", "xxx").equals("model") )
 		{
 			RectangularModel model = new RectangularModel(instance);
@@ -78,8 +67,39 @@ public class EntryPoint
 		System.out.println("-rounds [i]  Heuristic rounds");
 		System.out.println("-maxtime [i] Time limit in seconds");
 		System.out.println("-branch [s]  Branching strategy [rf|side]");
+		System.out.println("-price [s]   Pricing strategy [zw|zwb]");
 		System.out.println("-verbose     Show log");
 		System.out.println("-show        Show solutions");
+	}
+	
+	private static void processParameters()
+	{
+		
+		Heuristic.setRounds(_argmap.intArg("-rounds", 10));
+		Heuristic.setMaxTime(_argmap.intArg("-maxtime", 3600));
+		RectangularModel.setMaxTime(_argmap.intArg("-maxtime", 3600));
+		RectangularModel.setVerbose(_argmap.containsArg("-verbose"));
+		Solver.setMaxTime(_argmap.intArg("-maxtime", 3600));
+		Solver.setVerbose(_argmap.containsArg("-verbose"));
+		Solver.setBrancher(_argmap.stringArg("-branch", "rf").equals("rf") ? Solver.Brancher.RyanFoster : Solver.Brancher.Side);
+		
+		if( Solver.getBrancher() == Solver.Brancher.Side )
+			PricingModel.setBorderConstraints(true);
+		
+		if( _argmap.stringArg("-price", "zw").equals("zwb") )
+			PricingModel.setBorderConstraints(true);
+	}
+
+	private static Instance getInstance()
+	{
+		int dim = _argmap.intArg("-d", 2);
+		int points = _argmap.intArg("-n", 50);
+		int clusters = _argmap.intArg("-c", 3);
+		double disp = _argmap.doubleArg("-disp", 0.5);
+		int seed = _argmap.intArg("-seed", 5);
+		
+		Instance instance = RandomInstance.generate(dim, points, clusters, disp, seed);
+		return instance;
 	}
 	
 	public static String getVersion()

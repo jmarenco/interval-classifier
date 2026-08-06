@@ -37,11 +37,14 @@ public class PricingModel extends Pricing
 	private IloNumVar[] l;
 	private IloNumVar[][] wl;
 	private IloNumVar[][] wr;
+	private IloNumVar[][] bl;
+	private IloNumVar[][] br;
 	
 	// Parameters
 	private static double _reducedCostThreshold = -0.0001; // Threshold for considering the objective as negative
 	private static double _variableThreshold = 0.05; // Threshold for considering a variable as null
 	private static boolean _stopWhenNegative = false;
+	private static boolean _border = false;
 
 	// Statistics
 	private double _solvingTime = 0;
@@ -71,6 +74,7 @@ public class PricingModel extends Pricing
     	    createBindingLRWConstraints();
     	    createBindingWZConstraints();
     	    createNonemptyConstraints();
+    	    createBorderConstraints();
     		createObjective();
 
             branchingConstraints = new HashMap<BranchingDecision, IloConstraint>();
@@ -126,6 +130,19 @@ public class PricingModel extends Pricing
 
 		for(int t=0; t<d; ++t)
 	    	l[t] = cplex.numVar(_instance.min(t), _instance.max(t), "l" + t);
+		
+		if( _border == true )
+		{
+			bl = new IloNumVar[p][d];
+			br = new IloNumVar[p][d];
+
+			for(int i=0; i<p; ++i) if( _instance.getPoint(i).getClassID() == _class )
+			for(int t=0; t<d; ++t)
+			{
+			  	bl[i][t] = cplex.boolVar("bl" + i + "_" + t);
+			  	br[i][t] = cplex.boolVar("br" + i + "_" + t);
+			}
+		}
 	}
 
 	private void createOrderingConstraints() throws IloException
@@ -207,6 +224,51 @@ public class PricingModel extends Pricing
 		cplex.addGe(lhs, 1);
 	}
 
+	private void createBorderConstraints() throws IloException
+	{
+		if( _border == false )
+			return;
+
+		for(int t=0; t<d; ++t)
+		{
+			IloNumExpr lhs1 = cplex.linearIntExpr();
+			IloNumExpr lhs2 = cplex.linearIntExpr();
+			IloNumExpr lhs3 = cplex.linearIntExpr();
+			IloNumExpr lhs4 = cplex.linearIntExpr();
+			
+			lhs3 = cplex.sum(lhs3, cplex.prod(-1, l[t]));
+			lhs4 = cplex.sum(lhs4, cplex.prod(-1, r[t]));
+			
+			for(int i=0; i<p; ++i) if( _instance.getPoint(i).getClassID() == _class )
+			{
+				lhs1 = cplex.sum(lhs1, bl[i][t]);
+				lhs2 = cplex.sum(lhs2, br[i][t]);
+				lhs3 = cplex.sum(lhs3, cplex.prod(_instance.getPoint(i).get(t), bl[i][t]));
+				lhs4 = cplex.sum(lhs4, cplex.prod(_instance.getPoint(i).get(t), br[i][t]));
+			}
+
+			cplex.addEq(lhs1, 1);
+			cplex.addEq(lhs2, 1);
+			cplex.addEq(lhs3, 0);
+			cplex.addEq(lhs4, 0);
+		}
+
+		for(int t=0; t<d; ++t)
+		for(int i=0; i<p; ++i) if( _instance.getPoint(i).getClassID() == _class )
+		{
+			IloNumExpr lhs1 = cplex.linearIntExpr();
+			IloNumExpr lhs2 = cplex.linearIntExpr();
+
+			lhs1 = cplex.sum(lhs1, bl[i][t]);
+			lhs1 = cplex.sum(lhs1, cplex.prod(-1, z[i]));
+			lhs2 = cplex.sum(lhs2, br[i][t]);
+			lhs2 = cplex.sum(lhs2, cplex.prod(-1, z[i]));
+			
+			cplex.addLe(lhs1, 0);
+			cplex.addLe(lhs2, 0);
+		}
+	}
+
 	private void createObjective() throws IloException
 	{
 		IloNumExpr fobj = cplex.linearNumExpr();
@@ -221,6 +283,10 @@ public class PricingModel extends Pricing
     public List<Cluster> generateColumns(double timeLimit)
     {
         List<Cluster> newPatterns = new ArrayList<>();
+        
+        if( timeLimit < 0.5 )
+        	return newPatterns;
+        
         try
         {
             cplex.setParam(IloCplex.Param.TimeLimit, timeLimit); //set time limit in seconds
@@ -345,6 +411,9 @@ public class PricingModel extends Pricing
     
     private void performBranchingOnSide(BranchOnSide sc)
     {
+    	if( _border == false )
+    		throw new RuntimeException("Pricing model does not support side branching without border constraints!");
+
     	if( _instance.getPoint(sc.getPoint()).getClassID() != _class )
     		return;
     	
@@ -434,6 +503,11 @@ public class PricingModel extends Pricing
         {
             e.printStackTrace();
         }
+    }
+    
+    public static void setBorderConstraints(boolean value)
+    {
+    	_border = value;
     }
     
     public static void stopWhenNegative(boolean value)

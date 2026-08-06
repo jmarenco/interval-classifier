@@ -78,7 +78,7 @@ public class BranchOnSide implements BranchingDecision
     		ret = _lowerBound ? side >= _threshold - _tolerance : side <= _threshold + _tolerance;
     	}
     	
-//    	System.out.println("Compat " + cluster + " BC: " + this + " = " + ret);
+//    	System.out.println("Compat " + cluster + ", side: " + (_max ? cluster.max(_dimension) : cluster.min(_dimension)) + " - BC: " + this + " = " + ret);
     	return ret;
     }
 

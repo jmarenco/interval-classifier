@@ -286,7 +286,7 @@ public class Cluster
 	{
 		String ret = "";
 		for(Point point: _points)
-			ret += (ret.length() > 0 ? ", " : "") + point.getId();
+			ret += (ret.length() > 0 ? ", " : "") + point.getId(); // + " " + point;
 		
 		return "{" + ret + "} #" + _class;
 	}
