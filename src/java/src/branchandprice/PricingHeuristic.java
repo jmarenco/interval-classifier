@@ -112,4 +112,9 @@ public class PricingHeuristic extends Pricing
     {
     	return _generatedColumns;
     }
+
+	public double getMasterBound()
+	{
+		return 0;
+	}
 }

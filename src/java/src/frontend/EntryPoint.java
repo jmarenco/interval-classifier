@@ -86,6 +86,7 @@ public class EntryPoint
 		MasterWithRebuild.setInitialkMeans(_argmap.containsArg("-ik"));
 		Solver.setMaxTime(_argmap.intArg("-maxtime", 3600));
 		Solver.setVerbose(_argmap.containsArg("-verbose"));
+		Solver.setPricingLog(_argmap.containsArg("-pricinglog"));
 		Solver.setBrancher(_argmap.stringArg("-branch", "rf").equals("rf") ? Solver.Brancher.RyanFoster : Solver.Brancher.Side);
 		
 		if( Solver.getBrancher() == Solver.Brancher.Side )

@@ -2,25 +2,28 @@ package branchandprice;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
+
 import general.Cluster;
 import general.Instance;
 
 public class PricingModels extends Pricing
 {
+	private Master _master;
 	private Instance _instance;
 	private ArrayList<PricingModel> _models;
-	
+	private double _masterBound;
 	
 	// Creates a new solver instance for a particular pricing problem
     public PricingModels(Master master)
     {
+    	_master = master;
         _instance = master.getInstance();
     	_models = new ArrayList<PricingModel>();
     	
     	for(int j=0; j<_instance.getClasses(); ++j)
     		_models.add(new PricingModel(master, j));
     }
-
 	
 	// Main method for solving the pricing problem
     public List<Cluster> generateColumns(double timeLimit)
@@ -29,7 +32,12 @@ public class PricingModels extends Pricing
         
         for(PricingModel model: _models)
     		ret.addAll(model.generateColumns(timeLimit));
-    	
+        
+        while( ret.size() > this.getMaxColsPerPricing() )
+        	ret.removeLast();
+        
+    	_masterBound = _master.getObjValue() + IntStream.range(0, _instance.getClasses()).mapToDouble(c -> _models.get(c).getObjValue() * _instance.getClusters(c)).sum();
+
     	return ret;
     }
 
@@ -70,4 +78,9 @@ public class PricingModels extends Pricing
     {
     	return _models.stream().mapToInt(m -> m.getGeneratedColumns()).sum();
     }
+
+	public double getMasterBound()
+	{
+		return _masterBound;
+	}
 }

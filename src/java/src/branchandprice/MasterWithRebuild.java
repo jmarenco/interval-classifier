@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.HashMap;
 import general.Instance;
 import general.Solution;
-import heuristic.Heuristic;
 import heuristic.Heuristics;
 import general.Cluster;
 
@@ -22,7 +21,9 @@ public class MasterWithRebuild implements Master
     private ArrayList<Column> _columns;
     private Map<IloNumVar, Column> _variables;
     private ArrayList<BranchingDecision> _branchings;
+
     private double _solvingTime = 0;
+    private double _objValue;
     
     private static boolean _initialSingletons = false;
     private static boolean _initialkmeans = false;
@@ -102,7 +103,9 @@ public class MasterWithRebuild implements Master
 //            _cplex.exportModel("/home/javier/Escritorio/master.lp");
 
             boolean solved = _cplex.solve();
+
             _solvingTime += (System.currentTimeMillis() - start) / 1000.0;
+            _objValue = _cplex.getObjValue();
 
             // Solve the model
             if( solved == false || _cplex.getStatus() != IloCplex.Status.Optimal )
@@ -282,16 +285,7 @@ public class MasterWithRebuild implements Master
     
     public double getObjValue()
     {
-    	try
-    	{
-    		return _cplex.getObjValue();
-    	}
-    	catch(Exception e)
-    	{
-    		e.printStackTrace();
-    	}
-    	
-    	return Double.MAX_VALUE;
+    	return _objValue;
     }
     
     public boolean isOptimal()

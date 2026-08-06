@@ -286,4 +286,9 @@ public class PricingHeuristicWithBranching extends Pricing
     {
     	return _generatedColumns;
     }
+
+	public double getMasterBound()
+	{
+		return 0;
+	}
 }

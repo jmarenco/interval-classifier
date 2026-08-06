@@ -24,6 +24,8 @@ public class Solver
 	
 	private long _start;
 	private double _ub;
+	private double _pricingTime;
+	private double _pricedColumns;
 	private int _totalIterations;
 	
 	private ArrayList<Node> _nodes;
@@ -37,6 +39,7 @@ public class Solver
 	
 	private static long _timeLimit = 3600;
 	private static boolean _verbose = true;
+	private static boolean _pricingLog = false;
 	private static boolean _summary = true;
 	private static Pricer _pricer = Pricer.Model;
 	private static Pricer _rootPricer = Pricer.None;
@@ -147,6 +150,9 @@ public class Solver
 					addedColumns += added.size();
 					iterations += 1;
 					_totalIterations += 1;
+					
+					if( _pricingLog == true )
+						showPricing(iterations);
 				}
 			}
 			
@@ -258,6 +264,21 @@ public class Solver
 		return _timeLimit - (System.currentTimeMillis() - _start) / 1000;
 	}
 	
+	private void showPricing(int iteration)
+	{
+		System.out.print("  It: " + iteration + " | ");
+		System.out.print(_pricing.getGeneratedColumns() + " cols | ");
+		System.out.print((_pricing.getGeneratedColumns() - _pricedColumns) + " new | ");
+		System.out.print(String.format("%7.2f", _pricing.getSolvingTime()) + " total sec | ");
+		System.out.print(String.format("%7.2f", _pricing.getSolvingTime() - _pricingTime) + " sec | ");
+		System.out.print("Obj: " + String.format("%7.4f", _master.getObjValue()) + " | ");
+		System.out.print("MLB: " + String.format("%7.4f", _pricing.getMasterBound()));
+		System.out.println();
+		
+		_pricingTime = _pricing.getSolvingTime(); // These statistics are cumulative
+		_pricedColumns = _pricing.getGeneratedColumns();
+	}
+
 	private void showStatistics(Node current, int iterations, int addedColumns, boolean incumbentUpdated)
 	{
 		double dualBound = getDualBound();
@@ -270,6 +291,7 @@ public class Solver
 		System.out.print("Nodes: " + _nodes.size() + " | ");
 		System.out.print("Open: " + _openNodes.size() + " | ");
 		System.out.print(String.format("%7.2f", elapsedTime()) + " sec | ");
+		System.out.print("MLB: " + String.format("%7.4f", _pricing.getMasterBound()) + " | ");
 		System.out.print("Cols: " + _master.getColumns().size());
 		
 		if( current != null )
@@ -338,6 +360,11 @@ public class Solver
 	public static void setVerbose(boolean verbose)
 	{
 		_verbose = verbose;
+	}
+	
+	public static void setPricingLog(boolean verbose)
+	{
+		_pricingLog = verbose;
 	}
 	
 	public static void showSummary(boolean summary)

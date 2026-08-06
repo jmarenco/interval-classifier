@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import general.Cluster;
 import general.Instance;
 import ilog.concert.IloConstraint;
@@ -13,7 +14,7 @@ import ilog.concert.IloNumVar;
 import ilog.concert.IloObjective;
 import ilog.cplex.IloCplex;
 
-public class PricingModel extends Pricing
+public class PricingModel
 {
 	// Input data
 	private Master _master;
@@ -47,6 +48,7 @@ public class PricingModel extends Pricing
 	private static boolean _border = false;
 
 	// Statistics
+	private double _objValue;
 	private double _solvingTime = 0;
 	private int _generatedColumns = 0;
 	
@@ -297,6 +299,7 @@ public class PricingModel extends Pricing
             boolean solved = cplex.solve();
             
             _solvingTime += (System.currentTimeMillis() - start) / 1000.0;
+            _objValue = cplex.getObjValue();
 
        		if( cplex.getCplexStatus() == IloCplex.CplexStatus.AbortTimeLim ) // Aborted due to time limit
        			return newPatterns;
@@ -334,7 +337,6 @@ public class PricingModel extends Pricing
             if( cplex.getStatus() != IloCplex.Status.Infeasible )
             { 
             	int nsols = cplex.getSolnPoolNsolns();
-            	int found = 0;
             	for (int j = 0; j < nsols; j++)
             	{
 //            		System.out.println(" => Pricing obj: " + cplex.getObjValue(j) + " - Dual of class constr: " + _master.getDuals()[p + _class]);
@@ -351,10 +353,6 @@ public class PricingModel extends Pricing
 		                    	
 		                newPatterns.add(cluster);
 //		                System.out.println(" -> " + cluster);
-		                
-		                found++;
-		                if (found >= getMaxColsPerPricing())
-		                	break;
 					}
 				}
             }
@@ -528,5 +526,10 @@ public class PricingModel extends Pricing
     public int getGeneratedColumns()
     {
     	return _generatedColumns;
+    }
+    
+    public double getObjValue()
+    {
+    	return _objValue;
     }
 }

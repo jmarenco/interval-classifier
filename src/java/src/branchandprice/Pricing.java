@@ -26,8 +26,19 @@ public abstract class Pricing
     // Gets number of generated columns
     public abstract int getGeneratedColumns();
     
+    // Gets dual bound on master's optimal value
+    public abstract double getMasterBound();
+    
     // Maximum number of columns to generate per pricing
     private static int _max_cols_per_pricing = 1;
-    public static void setMaxColsPerPricing(int max) { _max_cols_per_pricing = max; }
-    public int getMaxColsPerPricing() { return _max_cols_per_pricing; }
+
+    public static void setMaxColsPerPricing(int max)
+    {
+    	_max_cols_per_pricing = max;
+    }
+    
+    public int getMaxColsPerPricing()
+    {
+    	return _max_cols_per_pricing;
+    }
 }
