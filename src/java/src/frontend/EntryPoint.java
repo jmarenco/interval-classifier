@@ -12,7 +12,7 @@ import model.RectangularModel;
 
 public class EntryPoint
 {
-	private static String _version = "0.11";
+	private static String _version = "0.12";
 	private static ArgMap _argmap;
 	
 	public static void main(String[] args)
@@ -71,7 +71,7 @@ public class EntryPoint
 		System.out.println("-price [s]   Pricing strategy [zw|zwb]");
 		System.out.println("-is          Initial singleton columns");
 		System.out.println("-ik          Initial columns from k-means heuristic");
-		System.out.println("-ds [f]      Dual stabilization with factor f");
+		System.out.println("-ds(r) [f]   Dual stabilization (only in root) with factor f");
 		System.out.println("-verbose     Show log");
 		System.out.println("-show        Show solutions");
 	}
@@ -81,12 +81,16 @@ public class EntryPoint
 		Heuristic.setRounds(_argmap.intArg("-rounds", 10));
 		Heuristic.setMaxTime(_argmap.intArg("-maxtime", 3600));
     	Heuristic.setShowSummary(_argmap.stringArg("-m", "xxx").equals("kmeans"));
+    	
 		RectangularModel.setMaxTime(_argmap.intArg("-maxtime", 3600));
 		RectangularModel.setVerbose(_argmap.containsArg("-verbose"));
+		
 		MasterWithRebuild.setInitialSingletons(_argmap.containsArg("-is"));
 		MasterWithRebuild.setInitialkMeans(_argmap.containsArg("-ik"));
-		MasterWithRebuild.setDualStabilization(_argmap.doubleArg("-ds", 0));
+
 		Solver.setMaxTime(_argmap.intArg("-maxtime", 3600));
+		Solver.setDualStabilizer(Math.max(_argmap.doubleArg("-ds", 0), _argmap.doubleArg("-dsr", 0)));
+		Solver.onlyStabilizeRoot(_argmap.containsArg("-dsr"));
 		Solver.setVerbose(_argmap.containsArg("-verbose"));
 		Solver.setPricingLog(_argmap.containsArg("-pricinglog"));
 		Solver.setBrancher(_argmap.stringArg("-branch", "rf").equals("rf") ? Solver.Brancher.RyanFoster : Solver.Brancher.Side);

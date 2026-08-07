@@ -38,6 +38,8 @@ public class Solver
 	public static enum Brancher { Side, RyanFoster };
 	
 	private static long _timeLimit = 3600;
+	private static double _dualStabilizer = 0;
+	private static boolean _onlyStabilizeRoot = true;
 	private static boolean _verbose = true;
 	private static boolean _pricingLog = false;
 	private static boolean _summary = true;
@@ -82,6 +84,8 @@ public class Solver
 
 		// Initializes variables
 		_master.addFeasibleColumns();
+		_master.setDualStabilizer(_dualStabilizer);
+		
 		_incumbent = null;
 		_ub = Math.max(1000, 2 * IntStream.range(0, _instance.getDimension()).mapToDouble(t -> _instance.max(t) - _instance.min(t)).sum());
 		
@@ -151,6 +155,12 @@ public class Solver
 					iterations += 1;
 					_totalIterations += 1;
 					
+					if( newColumns == false && _dualStabilizer > 0 && _master.getDualStabilizer() > 0 )
+					{
+						_master.setDualStabilizer(0);
+						newColumns = true; // Let's try again if no columns were added with dual stabilization
+					}
+					
 					if( _pricingLog == true )
 						showPricing(iterations);
 				}
@@ -191,6 +201,10 @@ public class Solver
 				_openNodes.remove(current); // Otherwise, we are exiting due to the time limit, and the current node remains open
 			
 			last = current;
+//			_master.restartDualStabilization();
+			
+			if( _onlyStabilizeRoot == false )
+				_master.setDualStabilizer(_dualStabilizer);
 			
 			if( _verbose == true )
 				showStatistics(current, iterations, addedColumns, incumbentUpdated);
@@ -273,6 +287,7 @@ public class Solver
 		System.out.print(String.format("%7.2f", _pricing.getSolvingTime() - _pricingTime) + " sec | ");
 		System.out.print("Obj: " + String.format("%11.4f", _master.getObjValue()) + " | ");
 		System.out.print("MLB: " + String.format("%11.4f", _pricing.getMasterBound()));
+		System.out.print(_master.getDualStabilizer() > 0 ? " | DS: " + _master.getDualStabilizer() : "");
 		System.out.println();
 		
 		_pricingTime = _pricing.getSolvingTime(); // These statistics are cumulative
@@ -356,6 +371,11 @@ public class Solver
 	{
 		_timeLimit = timeLimit;
 	}
+
+	public static void setDualStabilizer(double alpha)
+	{
+		_dualStabilizer = alpha;
+	}
 	
 	public static void setVerbose(boolean verbose)
 	{
@@ -370,6 +390,11 @@ public class Solver
 	public static void showSummary(boolean summary)
 	{
 		_summary = summary;
+	}
+	
+	public static void onlyStabilizeRoot(boolean value)
+	{
+		_onlyStabilizeRoot = value;
 	}
 	
 	public static void setPricer(Pricer pricer)

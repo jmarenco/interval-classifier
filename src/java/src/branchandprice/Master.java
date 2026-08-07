@@ -51,4 +51,8 @@ public interface Master
     
     // Gets total solving time
     public double getSolvingTime();
+    
+    // Sets parameter for dual stabilization (alpha = 0 corresponds to no stabilization)
+    public void setDualStabilizer(double alpha);
+    public double getDualStabilizer();
 }

@@ -29,7 +29,7 @@ public class MasterWithRebuild implements Master
     
     private static boolean _initialSingletons = false;
     private static boolean _initialkmeans = false;
-    private static double _dualStabilization = 0;
+    private double _dualStabilizer = 0;
 
     public MasterWithRebuild(Instance instance)
     {
@@ -163,10 +163,10 @@ public class MasterWithRebuild implements Master
         {
             _duals = _cplex.getDuals(_allConstraints);
             
-            if( _dualStabilization > 0 && _previousDuals != null )
+            if( _dualStabilizer > 0 && _previousDuals != null )
             {
             	for(int i=0; i<_duals.length && i<_previousDuals.length; ++i)
-            		_duals[i] = (1 - _dualStabilization) * _duals[i] + _dualStabilization * _previousDuals[i];
+            		_duals[i] = (1 - _dualStabilizer) * _duals[i] + _dualStabilizer * _previousDuals[i];
             }
 
             _previousDuals = _duals; // This or the original duals?
@@ -209,7 +209,7 @@ public class MasterWithRebuild implements Master
     // Adds a new column to the master problem
     public void addColumn(Cluster cluster)
     {
-		if( _columns.stream().anyMatch(c -> !c.isArtificial() && c.getCluster().equals(cluster)) )
+		if( _columns.stream().anyMatch(c -> !c.isArtificial() && c.getCluster().equals(cluster)) && _dualStabilizer == 0 )
 			throw new RuntimeException("Duplicated column added to master! " + cluster);
 
 		try
@@ -387,11 +387,16 @@ public class MasterWithRebuild implements Master
     	_initialkmeans = value;
     }
     
-    public static void setDualStabilization(double value)
+    public void setDualStabilizer(double value)
     {
     	if( value < 0 || value >= 1 )
     		throw new RuntimeException("Invalid factor for dual stabilization: " + value);
 
-    	_dualStabilization = value;
+    	_dualStabilizer = value;
+    }
+    
+    public double getDualStabilizer()
+    {
+    	return _dualStabilizer;
     }
 }
