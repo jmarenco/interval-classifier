@@ -25,7 +25,7 @@ public class Solver
 	private long _start;
 	private double _ub;
 	private double _pricingTime;
-	private double _pricedColumns;
+	private int _pricedColumns;
 	private int _totalIterations;
 	
 	private ArrayList<Node> _nodes;
@@ -266,9 +266,9 @@ public class Solver
 	
 	private void showPricing(int iteration)
 	{
-		System.out.print("  It: " + iteration + " | ");
-		System.out.print(_pricing.getGeneratedColumns() + " cols | ");
-		System.out.print((_pricing.getGeneratedColumns() - _pricedColumns) + " new | ");
+		System.out.print("  It: " + String.format("%3d", iteration) + " | ");
+		System.out.print(String.format("%5d", _pricing.getGeneratedColumns()) + " cols | ");
+		System.out.print(String.format("%3d", _pricing.getGeneratedColumns() - _pricedColumns) + " new | ");
 		System.out.print(String.format("%7.2f", _pricing.getSolvingTime()) + " total sec | ");
 		System.out.print(String.format("%7.2f", _pricing.getSolvingTime() - _pricingTime) + " sec | ");
 		System.out.print("Obj: " + String.format("%11.4f", _master.getObjValue()) + " | ");

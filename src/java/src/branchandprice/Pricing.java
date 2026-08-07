@@ -30,15 +30,26 @@ public abstract class Pricing
     public abstract double getMasterBound();
     
     // Maximum number of columns to generate per pricing
-    private static int _max_cols_per_pricing = 1;
+    private static int _maxColumns = 100;
+    private static int _maxClassColumns = 100;
 
     public static void setMaxColsPerPricing(int max)
     {
-    	_max_cols_per_pricing = max;
+    	_maxColumns = max;
     }
     
-    public int getMaxColsPerPricing()
+    public static void setMaxColsPerClassPricing(int max)
     {
-    	return _max_cols_per_pricing;
+    	_maxClassColumns = max;
+    }
+
+    public static int getMaxColsPerPricing()
+    {
+    	return _maxColumns;
+    }
+
+    public static int getMaxColsPerClassPricing()
+    {
+    	return _maxClassColumns;
     }
 }

@@ -337,6 +337,7 @@ public class PricingModel
             if( cplex.getStatus() != IloCplex.Status.Infeasible )
             { 
             	int nsols = cplex.getSolnPoolNsolns();
+            	int found = 0;
             	for (int j = 0; j < nsols; j++)
             	{
 //            		System.out.println(" => Pricing obj: " + cplex.getObjValue(j) + " - Dual of class constr: " + _master.getDuals()[p + _class]);
@@ -350,9 +351,15 @@ public class PricingModel
 		                  	if( Math.abs(values[i] - 1) < _variableThreshold && _instance.getPoint(i).getClassID() == _class )
 		                   		cluster.add(_instance.getPoint(i));
 		                }
-		                    	
-		                newPatterns.add(cluster);
+		                
+		                if( newPatterns.contains(cluster) == false )
+		                	newPatterns.add(cluster);
+
 //		                System.out.println(" -> " + cluster);
+		                
+		                found++;
+		                if( found >= Pricing.getMaxColsPerClassPricing() )
+		                	break;
 					}
 				}
             }

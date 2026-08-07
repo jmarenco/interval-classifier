@@ -33,7 +33,7 @@ public class PricingModels extends Pricing
         for(PricingModel model: _models)
     		ret.addAll(model.generateColumns(timeLimit));
         
-        while( ret.size() > this.getMaxColsPerPricing() )
+        while( ret.size() > Pricing.getMaxColsPerPricing() )
         	ret.removeLast();
         
     	 _masterBound = _master.getObjValue() + IntStream.range(0, _instance.getClasses()).mapToDouble(c -> _models.get(c).getObjValue() * _instance.getClusters(c)).sum();
