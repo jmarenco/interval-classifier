@@ -12,6 +12,7 @@ import java.util.HashMap;
 import general.Cluster;
 import general.Instance;
 import general.Solution;
+import heuristic.Heuristics;
 
 public class Solver
 {
@@ -40,6 +41,8 @@ public class Solver
 	private static long _timeLimit = 3600;
 	private static double _dualStabilizer = 0;
 	private static boolean _onlyStabilizeRoot = true;
+    private static boolean _initialSingletons = false;
+    private static boolean _initialkmeans = false;
 	private static boolean _verbose = true;
 	private static boolean _pricingLog = false;
 	private static boolean _summary = true;
@@ -83,11 +86,11 @@ public class Solver
 			_rootPricing = new PricingHeuristic(_master);
 
 		// Initializes variables
+		_ub = 1000;
+		_incumbent = null;
+		_master.setInitialColumns(initialColumns()); // Should be called after initializing _ub and _incumbent
 		_master.addFeasibleColumns();
 		_master.setDualStabilizer(_dualStabilizer);
-		
-		_incumbent = null;
-		_ub = Math.max(1000, 2 * IntStream.range(0, _instance.getDimension()).mapToDouble(t -> _instance.max(t) - _instance.min(t)).sum());
 		
 		// Creates root node
 		Node root = new Node(0);
@@ -214,6 +217,30 @@ public class Solver
 			showSummary();
 		
 		return new Solution(_incumbent);
+	}
+	
+	// Initial columns
+	private ArrayList<Cluster> initialColumns()
+	{
+		ArrayList<Cluster> ret = new ArrayList<Cluster>();
+		
+        if( _initialSingletons == true )
+        {
+        	for(int i=0; i<_instance.getPoints(); ++i)
+    			ret.add(Cluster.singleton(_instance.getPoint(i)));
+        }
+        
+        if( _initialkmeans == true )
+        {
+			Solution heuristic = Heuristics.basic(_instance).run();
+			for(Cluster cluster: heuristic.getClusters())
+				ret.add(cluster);
+			
+			_ub = heuristic.misclassified(_instance);
+			_incumbent = heuristic.getClusters();
+        }
+        
+        return ret;
 	}
 	
 	// Node selection rule
@@ -386,6 +413,16 @@ public class Solver
 	{
 		_pricingLog = verbose;
 	}
+    
+    public static void setInitialSingletons(boolean value)
+    {
+    	_initialSingletons = value;
+    }
+    
+    public static void setInitialkMeans(boolean value)
+    {
+    	_initialkmeans = value;
+    }
 	
 	public static void showSummary(boolean summary)
 	{

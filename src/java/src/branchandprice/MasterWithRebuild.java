@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import general.Instance;
-import general.Solution;
-import heuristic.Heuristics;
 import general.Cluster;
 
 public class MasterWithRebuild implements Master
@@ -18,6 +16,7 @@ public class MasterWithRebuild implements Master
     private IloRange[] _binding; // Constraints
     private IloRange[] _numberOfClusters;
     private IloRange[] _allConstraints;
+    private ArrayList<Cluster> _initialColumns;
     private ArrayList<Column> _columns;
     private Map<IloNumVar, Column> _variables;
     private ArrayList<BranchingDecision> _branchings;
@@ -26,9 +25,6 @@ public class MasterWithRebuild implements Master
     private double _objValue;
     private double[] _previousDuals = null;
     private double[] _duals = null;
-    
-    private static boolean _initialSingletons = false;
-    private static boolean _initialkmeans = false;
     private double _dualStabilizer = 0;
 
     public MasterWithRebuild(Instance instance)
@@ -187,16 +183,9 @@ public class MasterWithRebuild implements Master
 			for(int j=0; j<_instance.getClasses(); ++j)
 				addColumn(Column.artificial(_instance, j));
 			
-	        if( _initialSingletons == true )
-	        {
-	        	for(int i=0; i<_instance.getPoints(); ++i)
-	    			addColumn(Column.singleton(_instance.getPoint(i)));
-	        }
-	        
-	        if( _initialkmeans == true )
-	        {
-				Solution heuristic = Heuristics.basic(_instance).run();
-				for(Cluster cluster: heuristic.getClusters())
+			if( _initialColumns != null )
+			{
+				for(Cluster cluster: _initialColumns)
 					addColumn(Column.regular(cluster, _instance));
 	        }
         }
@@ -371,22 +360,17 @@ public class MasterWithRebuild implements Master
     {
     	return _columns;
     }
-    
+
     public double getSolvingTime()
     {
     	return _solvingTime;
     }
-    
-    public static void setInitialSingletons(boolean value)
+
+    public void setInitialColumns(ArrayList<Cluster> clusters)
     {
-    	_initialSingletons = value;
+    	_initialColumns = clusters;
     }
-    
-    public static void setInitialkMeans(boolean value)
-    {
-    	_initialkmeans = value;
-    }
-    
+   
     public void setDualStabilizer(double value)
     {
     	if( value < 0 || value >= 1 )

@@ -13,6 +13,9 @@ public interface Master
     // Extracts information from the master problem required by the pricing problems
     public double[] getDuals();
     
+    // Sets initial columns
+    public void setInitialColumns(ArrayList<Cluster> clusters);
+    
     // Adds columns ensuring that a feasible solution exists
     public void addFeasibleColumns();
 

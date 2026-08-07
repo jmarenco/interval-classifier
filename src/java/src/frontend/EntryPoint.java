@@ -1,6 +1,5 @@
 package frontend;
 
-import branchandprice.MasterWithRebuild;
 import branchandprice.PricingModel;
 import branchandprice.Solver;
 import general.Instance;
@@ -85,10 +84,9 @@ public class EntryPoint
 		RectangularModel.setMaxTime(_argmap.intArg("-maxtime", 3600));
 		RectangularModel.setVerbose(_argmap.containsArg("-verbose"));
 		
-		MasterWithRebuild.setInitialSingletons(_argmap.containsArg("-is"));
-		MasterWithRebuild.setInitialkMeans(_argmap.containsArg("-ik"));
-
 		Solver.setMaxTime(_argmap.intArg("-maxtime", 3600));
+		Solver.setInitialSingletons(_argmap.containsArg("-is"));
+		Solver.setInitialkMeans(_argmap.containsArg("-ik"));
 		Solver.setDualStabilizer(Math.max(_argmap.doubleArg("-ds", 0), _argmap.doubleArg("-dsr", 0)));
 		Solver.onlyStabilizeRoot(_argmap.containsArg("-dsr"));
 		Solver.setVerbose(_argmap.containsArg("-verbose"));
