@@ -11,6 +11,11 @@ public class SimpleRecalculate implements Heuristic.RecalculateCentroidsStrategy
 {
 	private Instance _instance;
 	
+	private static enum Factor { Exponential, Linear };
+	private static Factor _factor = Factor.Exponential;
+	private static double _denominator = 10;
+	private static double _maxRelativeDistance = 1;
+	
 	public SimpleRecalculate(Instance instance)
 	{
 		_instance = instance;
@@ -25,10 +30,16 @@ public class SimpleRecalculate implements Heuristic.RecalculateCentroidsStrategy
 			Point newCentroid = cluster.centroid();
 			double radius = cluster.distanceToBorder(newCentroid);
 			
-			for(Point foreign: cluster.misclassified(_instance))
+			for(Point foreign: cluster.misclassified(_instance)) if( cluster.relativeDistanceToBorder(foreign) <= _maxRelativeDistance )
 			{
 				double dist = cluster.distanceToBorder(foreign);
-				double factor = Math.exp(-dist * dist / radius / radius) / 10;
+				double factor = 0;
+				
+				if( _factor == Factor.Exponential )
+					factor = Math.exp(-dist * dist / radius / radius) / _denominator;
+				else if( _factor == Factor.Linear )
+					factor = Math.abs(dist / _denominator);
+				
 				newCentroid.escapeFrom(foreign, factor);
 			}
 			
@@ -41,5 +52,24 @@ public class SimpleRecalculate implements Heuristic.RecalculateCentroidsStrategy
 		
 		return ret;
 	}
-
+	
+	public static void setFactor(String factor)
+	{
+		if( factor.toLowerCase().trim().equals("exp") )
+			_factor = Factor.Exponential;
+		else if( factor.toLowerCase().trim().equals("linear") )
+			_factor = Factor.Linear;
+		else
+			throw new RuntimeException("Unkown factor: " + factor);
+	}
+	
+	public static void setDenominator(double value)
+	{
+		_denominator = value;
+	}
+	
+	public static void setMaxRelativeDistance(double value)
+	{
+		_maxRelativeDistance = value;
+	}
 }

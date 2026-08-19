@@ -8,5 +8,4 @@ public class VoidAdjust implements Heuristic.AdjustSolutionStrategy
 	{
 		return solution;
 	}
-
 }

@@ -343,4 +343,19 @@ public class Cluster
 		
 		return ret;
 	}
+	
+	public double relativeDistanceToBorder(Point point)
+	{
+		if( point == null )
+			return 0;
+		
+		double ret = 1;
+		for(int t=0; t<point.getDimension(); ++t) if( _min[t] + 0.0001 < _max[t] )
+		{
+			ret = Math.min(ret, Math.abs((point.get(t) - _min[t])) / (_max[t] - _min[t]));
+			ret = Math.min(ret, Math.abs((point.get(t) - _max[t])) / (_max[t] - _min[t]));
+		}
+		
+		return ret;
+	}
 }
