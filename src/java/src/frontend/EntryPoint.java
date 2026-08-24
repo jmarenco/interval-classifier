@@ -13,7 +13,7 @@ import model.RectangularModel;
 
 public class EntryPoint
 {
-	private static String _version = "0.13";
+	private static String _version = "0.14";
 	private static ArgMap _argmap;
 	
 	public static void main(String[] args)

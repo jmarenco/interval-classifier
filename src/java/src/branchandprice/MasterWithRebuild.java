@@ -185,7 +185,7 @@ public class MasterWithRebuild implements Master
 			
 			if( _initialColumns != null )
 			{
-				for(Cluster cluster: _initialColumns)
+				for(Cluster cluster: _initialColumns) if( cluster.size() > 0 )
 					addColumn(Column.regular(cluster, _instance));
 	        }
         }
