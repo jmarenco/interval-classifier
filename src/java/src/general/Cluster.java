@@ -290,6 +290,20 @@ public class Cluster
 		
 		return "{" + ret + "} #" + _class;
 	}
+	
+	public String toRectanglesString()
+	{
+		String mins = "";
+		String maxs = "";
+		
+		for(int t=0; t<_min.length; ++t)
+		{
+			mins += (t > 0 ? ", " : "") + String.format("%.5f", _min[t]);
+			maxs += (t > 0 ? ", " : "") + String.format("%.5f", _max[t]);
+		}
+		
+		return "(" + mins + ") x (" + maxs + ")";
+	}
 
 	public boolean covers(Point p)
 	{

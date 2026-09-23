@@ -3,6 +3,7 @@ package frontend;
 import branchandprice.PricingModel;
 import branchandprice.Solver;
 import general.Instance;
+import general.InstanceReader;
 import general.RandomInstance;
 import general.Solution;
 import heuristic.Heuristic;
@@ -13,7 +14,7 @@ import model.RectangularModel;
 
 public class EntryPoint
 {
-	private static String _version = "0.14";
+	private static String _version = "0.15";
 	private static ArgMap _argmap;
 	
 	public static void main(String[] args)
@@ -54,6 +55,9 @@ public class EntryPoint
 			new Viewer(instance, "Instance");
 			new Viewer(instance, solution, "Solution");
 		}
+		
+		if( _argmap.containsArg("-printsolution") )
+			solution.print();
 	}
 	
 	private static void showParameters()
@@ -66,6 +70,7 @@ public class EntryPoint
 		System.out.println("-c [i]       Number of clusters in each class");
 		System.out.println("-disp [f]    Dispersion in each cluster");
 		System.out.println("-seed [i]    Random seed for construction of instance");
+		System.out.println("-file [s]    Read instance from file");
 		System.out.println("-maxtime [i] Time limit in seconds");
 		System.out.println("-branch [s]  Branching strategy [rf|side]");
 		System.out.println("-price [s]   Pricing strategy [zw|zwb]");
@@ -119,7 +124,16 @@ public class EntryPoint
 		double disp = _argmap.doubleArg("-disp", 0.5);
 		int seed = _argmap.intArg("-seed", 5);
 		
-		Instance instance = RandomInstance.generate(dim, points, clusters, disp, seed);
+		Instance instance = null;
+		
+		if( _argmap.containsArg("-file") )
+			instance = InstanceReader.constructFromFile(_argmap.stringArg("-file", "xxx"), clusters);
+		else
+			instance = RandomInstance.generate(dim, points, clusters, disp, seed);
+		
+		if( _argmap.containsArg("-printinstance") )
+			instance.print();
+		
 		return instance;
 	}
 	

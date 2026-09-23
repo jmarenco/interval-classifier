@@ -105,4 +105,10 @@ public class Solution
 	{
 		return _clusters.stream().mapToInt(c -> c.misclassified(instance).size()).sum();
 	}
+
+	public void print()
+	{
+		for(Cluster cluster: _clusters)
+			System.out.println(cluster.toRectanglesString());
+	}
 }

@@ -36,6 +36,11 @@ public class Point
 		return _id;
 	}
 	
+	public void setClassID(int id)
+	{
+		_class = id;
+	}
+	
 	public int getClassID()
 	{
 		return _class;
@@ -196,6 +201,10 @@ public class Point
 	@Override
 	public String toString()
 	{
-		return Arrays.toString(_values) + " - c" + _class;
+		String vals = "";
+		for(int t=0; t<_values.length; ++t)
+			vals += (t > 0 ? ", " : "") + String.format("%.5f", _values[t]);
+		
+		return "(" + vals + ") - c" + _class;
 	}
 }
