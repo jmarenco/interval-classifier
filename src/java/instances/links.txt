@@ -1,0 +1,7 @@
+All .txt files coming from:
+https://cs.joensuu.fi/sipu/datasets/
+
+Additional repositories:
+https://www.sciencedirect.com/science/article/pii/S2352340920303954
+https://archive.ics.uci.edu/datasets/?orderBy=DateDonated&sort=desc
+https://archive.ics.uci.edu/dataset/53/iris
