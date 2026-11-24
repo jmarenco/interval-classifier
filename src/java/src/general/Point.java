@@ -204,6 +204,11 @@ public class Point
 		Point other = (Point) obj;
 		return _class == other._class && _id == other._id && Arrays.equals(_values, other._values);
 	}
+	
+	public boolean equalsExceptClass(Point other)
+	{
+		return _id == other._id && Arrays.equals(_values, other._values);
+	}
 
 	@Override
 	public String toString()

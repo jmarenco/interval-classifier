@@ -24,7 +24,7 @@ import general.*;
 public class Viewer
 {
 	private JFrame _frame;
-	private Color[] _seriesColor = { Color.RED, Color.BLUE, Color.GREEN, Color.GRAY, Color.BLACK };
+	private Color[] _seriesColor = { Color.RED, Color.BLUE, Color.BLACK, Color.LIGHT_GRAY };
 	
 	public Viewer(Instance instance, String title)
 	{
@@ -91,9 +91,9 @@ public class Viewer
 	private XYSeriesCollection createDataset(Instance instance, Solution solution, ArrayList<Point> centroids)
 	{
 		XYSeriesCollection dataset = new XYSeriesCollection();
-		XYSeries[] series = new XYSeries[instance.getClasses()+1];
+		XYSeries[] series = new XYSeries[instance.getClasses()+2];
 		
-		for(int i=0; i<instance.getClasses()+1; ++i)
+		for(int i=0; i<instance.getClasses()+2; ++i)
 		{
 			series[i] = new XYSeries("Class " + i);
 			dataset.addSeries(series[i]);
@@ -104,6 +104,9 @@ public class Viewer
 			for(Cluster cluster: solution.getClusters())
 			for(Point point: cluster.asSet())
 				series[cluster.getClassID()].add(point.get(0), point.get(1));
+			
+			for(Point point: instance.asList()) if( solution.isOutlier(point) )
+				series[instance.getClasses()+1].add(point.get(0), point.get(1));
 		}
 		else
 		{

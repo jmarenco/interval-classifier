@@ -86,6 +86,26 @@ public class Solution
 		return _clusters != null;
 	}
 	
+	public boolean isOutlier(Point point)
+	{
+		for(Cluster cluster: _clusters)
+		{
+			if( cluster.getPoints().stream().anyMatch(p -> point.equalsExceptClass(p)) )
+				return false;
+		}
+		
+		return true;
+	}
+	
+	public boolean isRelabeled(Point point)
+	{
+		for(Cluster cluster: _clusters)
+		for(Point p: cluster.getPoints()) if( point.equalsExceptClass(p) && point.getClassID() != p.getClassID() )
+			return true;
+		
+		return false;
+	}
+	
 	public double totalSpan()
 	{
 		return _clusters.stream().mapToDouble(c -> c.span()).sum();
