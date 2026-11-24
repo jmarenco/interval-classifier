@@ -16,6 +16,8 @@ public class Instance
 	private int _classes;
 	private ArrayList<Point> _points;
 	private Map<Integer, Integer> _clusters;
+	private int _maxRelabels = 0;
+	private int _maxOutliers = 0;
 	
 	public static double infinity = 10000;
 
@@ -44,6 +46,26 @@ public class Instance
 	public void setName(String name)
 	{
 		_name = name;
+	}
+	
+	public void setMaxRelabels(int value)
+	{
+		_maxRelabels = value;
+	}
+	
+	public int getMaxRelabels()
+	{
+		return _maxRelabels;
+	}
+	
+	public void setMaxOutliers(int value)
+	{
+		_maxOutliers = value;
+	}
+	
+	public int getMaxOutliers()
+	{
+		return _maxOutliers;
 	}
 	
 	public String getName()
