@@ -1,6 +1,8 @@
 package general;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 import java.io.BufferedReader;
 import java.io.FileReader;
 
@@ -70,6 +72,69 @@ public class InstanceReader
         }
 
 		return temporal;
+    }
+
+	public static Instance constructFromFileWithGroundTruth(String fileName)
+	{
+		Instance ret = new Instance(fileName, 2, 0);
+		Set<Integer> class0labels = new HashSet<Integer>();
+		Set<Integer> class1labels = new HashSet<Integer>();
+		
+		try (BufferedReader br = new BufferedReader(new FileReader(fileName))) 
+		{
+            String line;
+            double maxValue = 0;
+            while ((line = br.readLine()) != null) 
+            {
+            	String[] values = line.split("\\s+");
+
+            	int dimension = -1;
+                for (String value : values) if( value.trim().length() > 0 )
+                	++dimension;
+                
+                Point p = new Point(ret.getPoints(), 0, dimension);
+                
+                int j = 0;
+                for (String value : values) if( value.trim().length() > 0 )
+                {
+                    value = value.trim(); // Remove leading and trailing whitespace
+                    if( isNumeric(value) )
+                    {
+                    	if( j < dimension )
+                    	{
+                    		p.set(j++, Double.parseDouble(value));
+                    		maxValue = Math.max(maxValue, Math.abs(Double.parseDouble(value)));
+                    	}
+                    	else
+                    	{
+                    		int groundTruth = Integer.parseInt(value);
+                    		int pointClass = groundTruth % 2;
+                    		p.setClassID(pointClass);
+                    		
+                    		if( pointClass == 0 )
+                    			class0labels.add(groundTruth);
+                    		else
+                    			class1labels.add(groundTruth);
+                    	}
+                    }
+                }
+                
+                ret.add(p);
+            }
+            
+            if( maxValue > 0 )
+    			ret.scale(1 / maxValue);
+            
+            ret.setClusters(0, class0labels.size());
+            ret.setClusters(1, class1labels.size());
+        } 
+		catch (IOException e) 
+		{
+            e.printStackTrace();
+            return null;
+        }
+
+		return ret;
     }
 
     public static boolean isNumeric(String str)

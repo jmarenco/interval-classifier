@@ -90,7 +90,10 @@ public class RectangularModel
 
 	private void createSolver() throws IloException
 	{
-		if (cplex != null)
+		if( _instance.getMaxRelabels() > 0 && _instance.getClasses() != 2 )
+			throw new RuntimeException("Model only supports relabels for two classes!");
+		
+		if( cplex != null )
 			cplex.end();
 		
 		cplex = new IloCplex();
@@ -331,8 +334,14 @@ public class RectangularModel
 	    	{
 	    		Cluster cluster = new Cluster();
 	    		
-				for(int i=0; i<p; ++i) if( cplex.getValue(z[i][j]) > 0.9 && classOf[j] == _instance.getPoint(i).getClassID() )
-					cluster.add(_instance.getPoint(i));
+				for(int i=0; i<p; ++i)
+				{
+					if( cplex.getValue(z[i][j]) > 0.9 && classOf[j] == _instance.getPoint(i).getClassID() )
+						cluster.add(_instance.getPoint(i));
+
+					if( bz[i][j] != null && cplex.getValue(bz[i][j]) > 0.9 && classOf[j] != _instance.getPoint(i).getClassID() )
+						cluster.add(_instance.getPoint(i).cloneWithClassID(classOf[j]));
+				}
 				
 				_solution.add(cluster);
 		    }

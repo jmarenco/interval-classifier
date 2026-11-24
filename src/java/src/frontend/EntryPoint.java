@@ -14,7 +14,7 @@ import model.RectangularModel;
 
 public class EntryPoint
 {
-	private static String _version = "0.15";
+	private static String _version = "0.16";
 	private static ArgMap _argmap;
 	
 	public static void main(String[] args)
@@ -71,6 +71,9 @@ public class EntryPoint
 		System.out.println("-disp [f]    Dispersion in each cluster");
 		System.out.println("-seed [i]    Random seed for construction of instance");
 		System.out.println("-file [s]    Read instance from file");
+		System.out.println("-gfile [s]   Read instance from file with ground truth");
+		System.out.println("-r [i]       Maximum number of relabels");
+		System.out.println("-o [i]       Maximum number of outliers");
 		System.out.println("-maxtime [i] Time limit in seconds");
 		System.out.println("-branch [s]  Branching strategy [rf|side]");
 		System.out.println("-price [s]   Pricing strategy [zw|zwb]");
@@ -128,8 +131,13 @@ public class EntryPoint
 		
 		if( _argmap.containsArg("-file") )
 			instance = InstanceReader.constructFromFile(_argmap.stringArg("-file", "xxx"), clusters);
+		else if( _argmap.containsArg("-gfile") )
+			instance = InstanceReader.constructFromFileWithGroundTruth(_argmap.stringArg("-gfile", "xxx"));
 		else
 			instance = RandomInstance.generate(dim, points, clusters, disp, seed);
+		
+		instance.setMaxRelabels(_argmap.intArg("-r", 0));
+		instance.setMaxOutliers(_argmap.intArg("-o", 0));
 		
 		if( _argmap.containsArg("-printinstance") )
 			instance.print();

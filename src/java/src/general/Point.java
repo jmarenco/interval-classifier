@@ -41,6 +41,13 @@ public class Point
 		_class = id;
 	}
 	
+	public Point cloneWithClassID(int id)
+	{
+		Point ret = this.clone();
+		ret.setClassID(id);
+		return ret;
+	}
+
 	public int getClassID()
 	{
 		return _class;
