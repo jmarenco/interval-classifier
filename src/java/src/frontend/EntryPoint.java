@@ -74,6 +74,8 @@ public class EntryPoint
 		System.out.println("-gfile [s]   Read instance from file with ground truth");
 		System.out.println("-r [i]       Maximum number of relabels");
 		System.out.println("-o [i]       Maximum number of outliers");
+		System.out.println("-addr [i]    Add a certain number of mislabeled points");
+		System.out.println("-addo [i]    Add a certain number of outliers");
 		System.out.println("-maxtime [i] Time limit in seconds");
 		System.out.println("-branch [s]  Branching strategy [rf|side]");
 		System.out.println("-price [s]   Pricing strategy [zw|zwb]");
@@ -138,6 +140,16 @@ public class EntryPoint
 		
 		instance.setMaxRelabels(_argmap.intArg("-r", 0));
 		instance.setMaxOutliers(_argmap.intArg("-o", 0));
+		
+		RandomInstance.relabel(instance, _argmap.intArg("-addr", 0), seed+1);
+		RandomInstance.addOutliers(instance, _argmap.intArg("-addo", 0), seed+2);
+
+		// Override of number of clusters for instances coming from text files
+		if( (_argmap.containsArg("-file") || _argmap.containsArg("-gfile")) && _argmap.containsArg("-c") )
+		{
+			for(int i=0; i<instance.getClasses(); ++i)
+				instance.setClusters(i, clusters);
+		}
 		
 		if( _argmap.containsArg("-printinstance") )
 			instance.print();

@@ -45,4 +45,26 @@ public class RandomInstance
 		
 		return ret;
 	}
+	
+	
+	public static void relabel(Instance instance, int points, int seed)
+	{
+		Random random = new Random(seed);
+		
+		for(int i=0; i<points; ++i)
+		{
+			Point point = instance.getPoint(random.nextInt(instance.getPoints()));
+			point.setClassID(point.getClassID() == 0 ? 1 : 0);
+		}
+	}
+	
+	public static void addOutliers(Instance instance, int points, int seed)
+	{
+		int dimension = instance.getDimension();
+		int classes = instance.getClasses();
+		Random random = new Random(seed);
+		
+		for(int i=0; i<points; ++i)
+			instance.add(randomPoint(random, instance.getPoints()+1, random.nextInt(classes), dimension, 2));
+	}
 }
