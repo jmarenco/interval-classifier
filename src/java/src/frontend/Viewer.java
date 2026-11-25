@@ -24,7 +24,7 @@ import general.*;
 public class Viewer
 {
 	private JFrame _frame;
-	private Color[] _seriesColor = { Color.RED, Color.BLUE, Color.BLACK, Color.LIGHT_GRAY };
+	private Color[] _seriesColor = { Color.RED, Color.BLUE, Color.MAGENTA, Color.PINK, Color.BLACK, Color.LIGHT_GRAY };
 	
 	public Viewer(Instance instance, String title)
 	{
@@ -91,9 +91,9 @@ public class Viewer
 	private XYSeriesCollection createDataset(Instance instance, Solution solution, ArrayList<Point> centroids)
 	{
 		XYSeriesCollection dataset = new XYSeriesCollection();
-		XYSeries[] series = new XYSeries[instance.getClasses()+2];
+		XYSeries[] series = new XYSeries[2*instance.getClasses()+2];
 		
-		for(int i=0; i<instance.getClasses()+2; ++i)
+		for(int i=0; i<2*instance.getClasses()+2; ++i)
 		{
 			series[i] = new XYSeries("Class " + i);
 			dataset.addSeries(series[i]);
@@ -103,10 +103,15 @@ public class Viewer
 		{
 			for(Cluster cluster: solution.getClusters())
 			for(Point point: cluster.asSet())
-				series[cluster.getClassID()].add(point.get(0), point.get(1));
+			{
+				if( solution.isRelabeled(point) == false )
+					series[cluster.getClassID()].add(point.get(0), point.get(1));
+				else
+					series[instance.getClasses()+cluster.getClassID()].add(point.get(0), point.get(1));
+			}
 			
 			for(Point point: instance.asList()) if( solution.isOutlier(point) )
-				series[instance.getClasses()+1].add(point.get(0), point.get(1));
+				series[2*instance.getClasses()+1].add(point.get(0), point.get(1));
 		}
 		else
 		{
@@ -117,7 +122,7 @@ public class Viewer
 		if( centroids != null )
 		{
 			for(Point point: centroids) if( point != null )
-				series[instance.getClasses()].add(point.get(0), point.get(1));
+				series[2*instance.getClasses()].add(point.get(0), point.get(1));
 		}
 		
 		return dataset;

@@ -3,7 +3,6 @@ package branchandprice;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.IntStream;
 
 import frontend.EntryPoint;
 
@@ -177,7 +176,7 @@ public class Solver
 				{
 					_incumbent = new ArrayList<Cluster>(_master.getSolution().keySet());
 					_ub = _master.getObjValue();
-					_solutions.add(new Solution(_incumbent));
+					_solutions.add(new Solution(_instance, _incumbent));
 
 					incumbentUpdated = true;
 //					System.out.println("Incumbent updated! Obj = " + _master.getObjValue());
@@ -216,7 +215,7 @@ public class Solver
 		if( _summary == true )
 			showSummary();
 		
-		return new Solution(_incumbent);
+		return new Solution(_instance, _incumbent);
 	}
 	
 	// Initial columns

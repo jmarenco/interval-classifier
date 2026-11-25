@@ -4,28 +4,31 @@ import java.util.ArrayList;
 
 public class Solution
 {
+	private Instance _instance;
 	private ArrayList<Cluster> _clusters;
 
-	public Solution() 
+	public Solution(Instance instance) 
 	{
+		_instance = instance;
 		_clusters = new ArrayList<>();
 	}
 
-	public Solution(ArrayList<Cluster> clusters)
+	public Solution(Instance instance, ArrayList<Cluster> clusters)
 	{
+		_instance = instance;
 		_clusters = clusters;
 	}
 
 	public static Solution withAllPoints(Instance instance, int classID) 
 	{
-		Solution ret = new Solution();
+		Solution ret = new Solution(instance);
 		ret.add(Cluster.withAllPoints(instance, classID));
 		return ret;
 	}
 	
 	public static Solution withAllSingletons(Instance instance)
 	{
-		Solution ret = new Solution();
+		Solution ret = new Solution(instance);
 		
 		for(int i=0; i<instance.getPoints(); ++i)
 			ret.add(Cluster.singleton(instance.getPoint(i)));
@@ -35,7 +38,7 @@ public class Solution
 	
 	public static Solution withEmptyClusters(Instance instance, int clusters)
 	{
-		Solution ret = new Solution();
+		Solution ret = new Solution(instance);
 		
 		for(int i=0; i<clusters; ++i)
 			ret.add(new Cluster());
@@ -99,8 +102,7 @@ public class Solution
 	
 	public boolean isRelabeled(Point point)
 	{
-		for(Cluster cluster: _clusters)
-		for(Point p: cluster.getPoints()) if( point.equalsExceptClass(p) && point.getClassID() != p.getClassID() )
+		for(Point p: _instance.asList()) if( point.equalsExceptClass(p) && point.getClassID() != p.getClassID() )
 			return true;
 		
 		return false;

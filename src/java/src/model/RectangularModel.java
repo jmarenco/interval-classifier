@@ -254,8 +254,13 @@ public class RectangularModel
 	    {
 			IloNumExpr lhs = cplex.linearIntExpr();
 			
-		    for(int j=0; j<n; ++j) if( classOf[j] == _instance.getPoint(i).getClassID() )
-		    	lhs = cplex.sum(lhs, z[i][j]);
+		    for(int j=0; j<n; ++j)
+		    {
+		    	if( classOf[j] == _instance.getPoint(i).getClassID() )
+		    		lhs = cplex.sum(lhs, z[i][j]);
+		    	else if( bz[i][j] != null )
+		    		lhs = cplex.sum(lhs, bz[i][j]);
+		    }
 
 			if( y[i] != null )
 				lhs = cplex.sum(lhs, y[i]);
@@ -287,8 +292,13 @@ public class RectangularModel
 		IloNumExpr fobj = cplex.linearNumExpr();
 
 		for(int i=0; i<p; ++i)
-		for(int j=0; j<n; ++j) if( classOf[j] != _instance.getPoint(i).getClassID() )
-			fobj = cplex.sum(fobj, z[i][j]);
+		for(int j=0; j<n; ++j)
+		{
+			if( classOf[j] != _instance.getPoint(i).getClassID() )
+				fobj = cplex.sum(fobj, z[i][j]);
+			else if( bz[i][j] != null )
+				fobj = cplex.sum(fobj, bz[i][j]);
+		}
 		
 		cplex.addMinimize(fobj);
 	}
@@ -326,7 +336,7 @@ public class RectangularModel
 
 	private void obtainSolution() throws IloException, UnknownObjectException
 	{
-		_solution = new Solution();
+		_solution = new Solution(_instance);
 		
     	if( cplex.getStatus() == Status.Optimal || cplex.getStatus() == Status.Feasible )
 		{
