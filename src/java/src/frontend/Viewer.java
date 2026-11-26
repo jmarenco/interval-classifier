@@ -104,7 +104,7 @@ public class Viewer
 			for(Cluster cluster: solution.getClusters())
 			for(Point point: cluster.asSet())
 			{
-				if( solution.isRelabeled(point) == false )
+				if( point.relabeled() == false )
 					series[cluster.getClassID()].add(point.get(0), point.get(1));
 				else
 					series[instance.getClasses()+cluster.getClassID()].add(point.get(0), point.get(1));

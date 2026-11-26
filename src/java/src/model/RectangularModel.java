@@ -350,7 +350,7 @@ public class RectangularModel
 						cluster.add(_instance.getPoint(i));
 
 					if( bz[i][j] != null && cplex.getValue(bz[i][j]) > 0.9 && classOf[j] != _instance.getPoint(i).getClassID() )
-						cluster.add(_instance.getPoint(i).cloneWithClassID(classOf[j]));
+						cluster.add(_instance.getPoint(i).cloneAndRelabel(classOf[j]));
 				}
 				
 				_solution.add(cluster);

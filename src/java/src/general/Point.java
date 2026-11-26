@@ -8,6 +8,7 @@ public class Point
 	private int _id;
 	private int _class;
 	private double[] _values;
+	private boolean _relabeled = false;
 	
 	public Point(int id, int classID, int dimension)
 	{
@@ -41,10 +42,21 @@ public class Point
 		_class = id;
 	}
 	
-	public Point cloneWithClassID(int id)
+	public void relabel(int id)
+	{
+		_class = id;
+		_relabeled = true;
+	}
+	
+	public boolean relabeled()
+	{
+		return _relabeled;
+	}
+	
+	public Point cloneAndRelabel(int id)
 	{
 		Point ret = this.clone();
-		ret.setClassID(id);
+		ret.relabel(id);
 		return ret;
 	}
 

@@ -100,14 +100,6 @@ public class Solution
 		return true;
 	}
 	
-	public boolean isRelabeled(Point point)
-	{
-		for(Point p: _instance.asList()) if( point.equalsExceptClass(p) && point.getClassID() != p.getClassID() )
-			return true;
-		
-		return false;
-	}
-	
 	public double totalSpan()
 	{
 		return _clusters.stream().mapToDouble(c -> c.span()).sum();
