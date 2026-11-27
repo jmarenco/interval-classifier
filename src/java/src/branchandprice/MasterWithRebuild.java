@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import general.Instance;
-import general.Solution;
 import general.Cluster;
+import general.FractionalSolution;
 
 public class MasterWithRebuild implements Master
 {
@@ -18,8 +18,6 @@ public class MasterWithRebuild implements Master
     private IloRange[] _labeling;
     private IloRange[] _relabeling;
     private IloRange[] _numberOfClusters;
-    private IloRange _numberOfRelabels;
-    private IloRange _numberOfOutliers;
     private IloRange[] _allConstraints;
     private IloNumVar[] _yvar;
     private IloNumVar[] _bvar;
@@ -113,7 +111,7 @@ public class MasterWithRebuild implements Master
                 for(int i=0; i<_instance.getPoints(); i++)
                 	lhs = _cplex.sum(lhs, _yvar[i]);
             	
-            	_numberOfOutliers = _cplex.addGe(lhs, _instance.getPoints() - _instance.getMaxOutliers(), "out");
+            	_cplex.addGe(lhs, _instance.getPoints() - _instance.getMaxOutliers(), "out");
             }
             
             if( _instance.getMaxRelabels() > 0 )
@@ -122,7 +120,7 @@ public class MasterWithRebuild implements Master
                 for(int i=0; i<_instance.getPoints(); i++)
                 	lhs = _cplex.sum(lhs, _bvar[i]);
 
-                _numberOfRelabels = _cplex.addLe(lhs, _instance.getMaxRelabels(), "rel");
+                _cplex.addLe(lhs, _instance.getMaxRelabels(), "rel");
             }
             
             // Collects all constraints into a single array
@@ -316,9 +314,9 @@ public class MasterWithRebuild implements Master
     }
 
     // Gets the solution from the master problem. Returns all non-zero valued columns from the master problem
-    public Solution getSolution()
+    public FractionalSolution getSolution()
     {
-    	Solution ret = new Solution(_instance);
+    	FractionalSolution ret = new FractionalSolution(_instance);
         try
         {
         	for(IloNumVar var: _variables.keySet())
@@ -328,8 +326,12 @@ public class MasterWithRebuild implements Master
         			ret.add(_variables.get(var).getCluster(), value);
             }
         	
-        	for(int i=0; i<_instance.getPoints(); ++i) if( _bvar[i] != null && _cplex.getValue(_bvar[i]) > 0.9 )
-        		ret.relabel(_instance.getPoint(i), 1 - _instance.getPoint(i).getClassID());
+        	for(int i=0; i<_instance.getPoints(); ++i) if( _bvar[i] != null )
+       		{
+        		double value = _cplex.getValue(_bvar[i]);
+        		if( value > 0.01 )
+        			ret.setRelabeling(_instance.getPoint(i), value);
+       		}
         }
         catch (IloException e)
         {

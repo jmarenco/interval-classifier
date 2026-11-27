@@ -22,9 +22,9 @@ public class Column
 		return new Column(Cluster.withAllPoints(instance, classID), 1000, true);
 	}
 	
-	public static Column regular(Cluster cluster, Instance instance)
+	public static Column regular(Cluster cluster, int cost)
 	{
-		return new Column(cluster, cluster.objective(instance), false);
+		return new Column(cluster, cost, false);
 	}
 	
 	public static Column singleton(Point point)

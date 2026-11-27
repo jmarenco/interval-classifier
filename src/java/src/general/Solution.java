@@ -3,29 +3,25 @@ package general;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 public class Solution
 {
 	private Instance _instance;
-	private Map<Cluster,Double> _clusters;
-	private Map<Point,Integer> _relabel;
+	private ArrayList<Cluster> _clusters;
+	private Map<Point,Integer> _relabels;
 
-	public Solution(Instance instance) 
+	public Solution(Instance instance)
 	{
 		_instance = instance;
-		_clusters = new HashMap<Cluster,Double>();
-		_relabel = new HashMap<Point,Integer>();
+		_clusters = new ArrayList<>();
+		_relabels = new HashMap<Point,Integer>();
 	}
 
 	public Solution(Instance instance, ArrayList<Cluster> clusters)
 	{
 		_instance = instance;
-		_clusters = new HashMap<Cluster,Double>();
-		_relabel = new HashMap<Point,Integer>();
-		
-		for(Cluster c: clusters)
-			_clusters.put(c, 1.0);
+		_clusters = clusters;
+		_relabels = new HashMap<Point,Integer>();
 	}
 
 	public static Solution withAllPoints(Instance instance, int classID) 
@@ -55,96 +51,92 @@ public class Solution
 		return ret;
 	}
 
-	public Set<Cluster> getClusters()
+	public ArrayList<Cluster> getClusters()
 	{
-		return _clusters.keySet();
+		return _clusters;
+	}
+	
+	public Cluster getCluster(int index)
+	{
+		return _clusters.get(index); 
 	}
 
 	public void add(Cluster cluster) 
 	{
-		_clusters.put(cluster, 1.0);
-	}
-
-	public void add(Cluster cluster, double value) 
-	{
-		_clusters.put(cluster, value);
-	}
-	
-	public double getValue(Cluster cluster)
-	{
-		return _clusters.get(cluster);
+		_clusters.add(cluster);
 	}
 	
 	public void remove(Cluster cluster)
 	{
-		if( _clusters.containsKey(cluster) == false )
+		if( _clusters.contains(cluster) == false )
 			throw new RuntimeException("Solution does not contain the cluster! " + cluster);
 		
 		_clusters.remove(cluster);
-	}
-	
-	public void relabel(Point point, int classID)
-	{
-		if( classID < 0 || classID >= _instance.getClasses() )
-			throw new RuntimeException("Invalid class ID: " + classID);
-		
-		_relabel.put(point, classID);
-	}
-	
-	public int getLabel(Point point)
-	{
-		return _relabel.containsKey(point) ? _relabel.get(point) : point.getClassID();
 	}
 	
 	public int size()
 	{
 		return _clusters.size();
 	}
-	
-	public boolean isOutlier(Point point)
+
+	public Cluster get(int i) 
 	{
-		for(Cluster cluster: _clusters.keySet())
-		{
-			if( cluster.getPoints().stream().anyMatch(p -> point.equalsExceptClass(p)) )
-				return false;
-		}
-		
-		return true;
+		return _clusters.get(i);
+	}
+
+	public void addTo(Point point, int j) 
+	{
+		_clusters.get(j).add(point);
+	}
+	
+	public boolean isFeasible()
+	{
+		return _clusters != null;
 	}
 	
 	public double totalSpan()
 	{
-		return _clusters.keySet().stream().mapToDouble(c -> c.span()).sum();
+		return _clusters.stream().mapToDouble(c -> c.span()).sum();
 	}
 
 	public double totalDiagonal() 
 	{
-		return _clusters.keySet().stream().mapToDouble(c -> c.diagonal()).sum();
+		return _clusters.stream().mapToDouble(c -> c.diagonal()).sum();
 	}
 	
 	public double averageDiagonal()
 	{
-		return _clusters.keySet().stream().mapToDouble(c -> c.diagonal()).average().orElse(0);
+		return _clusters.stream().mapToDouble(c -> c.diagonal()).average().orElse(0);
 	}
 
-	public int misclassified()
+	public int misclassified(Instance instance)
 	{
-		return _clusters.keySet().stream().mapToInt(c -> c.misclassified(this).size()).sum();
+		return _clusters.stream().mapToInt(c -> c.misclassified(this).size()).sum();
 	}
 
 	public void print()
 	{
-		for(Cluster cluster: _clusters.keySet())
+		for(Cluster cluster: _clusters)
 			System.out.println(cluster.toRectanglesString());
 	}
-
+	
 	public Instance getInstance()
 	{
 		return _instance;
 	}
+	
+	public void relabel(Point point, int classID)
+	{
+		_relabels.put(point, classID);
+	}
+
+	public int getLabel(Point point)
+	{
+		return _relabels.containsKey(point) ? _relabels.get(point) : point.getClassID();
+	}
 
 	public boolean relabeled(Point point)
 	{
-		return _relabel.containsKey(point);
+		return getLabel(point) != point.getClassID();
 	}
 }

@@ -2,8 +2,8 @@ package branchandprice;
 
 import java.util.ArrayList;
 import general.Instance;
-import general.Solution;
 import general.Cluster;
+import general.FractionalSolution;
 
 public interface Master
 {
@@ -23,7 +23,7 @@ public interface Master
     public void addColumn(Cluster cluster);
 
     // Gets the solution from the master problem. Returns all non-zero valued columns from the master problem
-    public Solution getSolution();
+    public FractionalSolution getSolution();
 
     // Gets the objective value of the last solution
     public double getObjValue();

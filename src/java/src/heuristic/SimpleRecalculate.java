@@ -30,7 +30,7 @@ public class SimpleRecalculate implements Heuristic.RecalculateCentroidsStrategy
 			Point newCentroid = cluster.centroid();
 			double radius = cluster.distanceToBorder(newCentroid);
 			
-			for(Point foreign: cluster.misclassified(_instance)) if( cluster.relativeDistanceToBorder(foreign) <= _maxRelativeDistance )
+			for(Point foreign: cluster.misclassified(solution)) if( cluster.relativeDistanceToBorder(foreign) <= _maxRelativeDistance )
 			{
 				double dist = cluster.distanceToBorder(foreign);
 				double factor = 0;
