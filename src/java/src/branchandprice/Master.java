@@ -1,8 +1,8 @@
 package branchandprice;
 
 import java.util.ArrayList;
-import java.util.Map;
 import general.Instance;
+import general.Solution;
 import general.Cluster;
 
 public interface Master
@@ -23,7 +23,7 @@ public interface Master
     public void addColumn(Cluster cluster);
 
     // Gets the solution from the master problem. Returns all non-zero valued columns from the master problem
-    public Map<Cluster, Double> getSolution();
+    public Solution getSolution();
 
     // Gets the objective value of the last solution
     public double getObjValue();

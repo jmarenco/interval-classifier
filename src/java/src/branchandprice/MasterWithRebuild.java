@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import general.Instance;
+import general.Solution;
 import general.Cluster;
 
 public class MasterWithRebuild implements Master
@@ -13,9 +14,15 @@ public class MasterWithRebuild implements Master
 	private Instance _instance;
 	private IloCplex _cplex;
     private IloObjective _obj; // Objective function
-    private IloRange[] _binding; // Constraints
+    private IloRange[] _covering; // Constraints
+    private IloRange[] _labeling;
+    private IloRange[] _relabeling;
     private IloRange[] _numberOfClusters;
+    private IloRange _numberOfRelabels;
+    private IloRange _numberOfOutliers;
     private IloRange[] _allConstraints;
+    private IloNumVar[] _yvar;
+    private IloNumVar[] _bvar;
     private ArrayList<Cluster> _initialColumns;
     private ArrayList<Column> _columns;
     private Map<IloNumVar, Column> _variables;
@@ -53,25 +60,86 @@ public class MasterWithRebuild implements Master
             // Define objective
             _obj = _cplex.addMinimize();
 
-            // Define binding constraints
-            _binding = new IloRange[_instance.getPoints()];
-            for(int i=0; i<_instance.getPoints(); i++)
-                _binding[i] = _cplex.addGe(_cplex.linearIntExpr(), 1, "bind" + i);
+            // Define outlier variables
+            _yvar = _instance.getMaxOutliers() > 0 ? new IloNumVar[_instance.getPoints()] : null;
+            _bvar = _instance.getMaxRelabels() > 0 ? new IloNumVar[_instance.getPoints()] : null;
             
+            // Constraint arrays
+            _covering = new IloRange[_instance.getPoints()];
+            _labeling = new IloRange[_instance.getPoints()];
+            _relabeling = new IloRange[_instance.getPoints()];
+            
+            // Define binding constraints
+            for(int i=0; i<_instance.getPoints(); i++)
+            {
+            	if( _instance.getMaxOutliers() == 0 )
+            	{
+            		_covering[i] = _cplex.addGe(_cplex.linearIntExpr(), 1, "bind" + i);
+            	}
+            	else
+            	{
+            		_yvar[i] = _cplex.numVar(0, 1, "y" + i);
+            		
+            		IloNumExpr lhs = _cplex.linearIntExpr();
+            		lhs = _cplex.sum(lhs, _cplex.prod(-1, _yvar[i]));
+                    _covering[i] = _cplex.addGe(lhs, 0, "bind" + i);
+            	}
+            }
+
+            // Define relabeling constraints
+            for(int i=0; i<_instance.getPoints(); i++) if( _instance.getMaxRelabels() > 0 )
+            {
+            	int clusters = _instance.getClusters(_instance.getPoint(i).getClassID());
+            	
+           		IloNumExpr lhs1 = _cplex.linearIntExpr();
+           		IloNumExpr lhs2 = _cplex.linearIntExpr();
+
+           		lhs1 = _cplex.sum(lhs1, _cplex.prod(-clusters, _bvar[i]));
+           		lhs2 = _cplex.sum(lhs2, _cplex.prod(clusters, _bvar[i]));
+
+           		_labeling[i] = _cplex.addGe(lhs1, -clusters, "lab" + i);
+                _relabeling[i] = _cplex.addGe(lhs2, 0, "rel" + i);
+            }
+
             // Define constraints on the number of clusters for each class
             _numberOfClusters = new IloRange[_instance.getClasses()];
-            
+	
             for(int j=0; j<_instance.getClasses(); ++j)
             	_numberOfClusters[j] = _cplex.addGe(_cplex.linearIntExpr(), -_instance.getClusters(j), "clus" + j);
             
-            // Collects all constraints into a single array
-            _allConstraints = new IloRange[_instance.getPoints() + _instance.getClasses()];
+            if( _instance.getMaxOutliers() > 0 )
+            {
+        		IloNumExpr lhs = _cplex.linearIntExpr();
+                for(int i=0; i<_instance.getPoints(); i++)
+                	lhs = _cplex.sum(lhs, _yvar[i]);
+            	
+            	_numberOfOutliers = _cplex.addGe(lhs, _instance.getPoints() - _instance.getMaxOutliers(), "out");
+            }
+            
+            if( _instance.getMaxRelabels() > 0 )
+            {
+        		IloNumExpr lhs = _cplex.linearIntExpr();
+                for(int i=0; i<_instance.getPoints(); i++)
+                	lhs = _cplex.sum(lhs, _bvar[i]);
 
+                _numberOfRelabels = _cplex.addLe(lhs, _instance.getMaxRelabels(), "rel");
+            }
+            
+            // Collects all constraints into a single array
+            _allConstraints = new IloRange[_instance.getPoints() + _instance.getClasses() + (_instance.getMaxRelabels() > 0 ? 2 * _instance.getPoints() : 0)];
+
+            int k = 0;
             for(int i=0; i<_instance.getPoints(); i++)
-            	_allConstraints[i] = _binding[i];
+            	_allConstraints[k++] = _covering[i];
             
             for(int j=0; j<_instance.getClasses(); ++j)
-            	_allConstraints[_instance.getPoints() + j] = _numberOfClusters[j];
+            	_allConstraints[k++] = _numberOfClusters[j];
+
+            for(int i=0; i<_instance.getPoints(); i++) if( _instance.getMaxRelabels() > 0 )
+            	_allConstraints[k++] = _labeling[i];
+
+            for(int i=0; i<_instance.getPoints(); i++) if( _instance.getMaxRelabels() > 0 )
+            	_allConstraints[k++] = _relabeling[i];
             
             // Adds all variables from existing columns. Must be eliminated is master is not rebuilt at each node
             int i = 0;
@@ -117,28 +185,29 @@ public class MasterWithRebuild implements Master
             }
             else
             {
+//            	System.out.println("---------------------------------------");
 //                System.out.println("Master solved - obj: " + _cplex.getObjValue());
-
+//
 //                for(IloNumVar var: _variables.keySet()) if( _cplex.getValue(var) > 0 )
 //            		System.out.println("  " + var.getName() + " = " + _cplex.getValue(var) + " " + _variables.get(var));
 //                
-//                for(IloNumVar var: _y)
+//                for(IloNumVar var: _yvar)
 //            		System.out.println("  " + var.getName() + " = " + _cplex.getValue(var));
-                	
+//                	
 //            	for(IloRange range: _allConstraints)
 //            		System.out.println(range + " = " + _cplex.getDual(range));
-
-//              java.util.Iterator it = _cplex.getModel().iterator();
-//              while( it.hasNext() )
-//              {
-//            	  Object obj = it.next();
-//            	  System.out.println(obj.getClass().getName());
-//            	  if( obj instanceof IloRange)
-//            	  System.out.println(obj + " " + _cplex.getDual((IloRange)obj));
-//              }
-
+//
+////              java.util.Iterator it = _cplex.getModel().iterator();
+////              while( it.hasNext() )
+////              {
+////            	  Object obj = it.next();
+////            	  System.out.println(obj.getClass().getName());
+////            	  if( obj instanceof IloRange)
+////            	  System.out.println(obj + " " + _cplex.getDual((IloRange)obj));
+////              }
+//
 //            	for(IloNumVar var: _variables.keySet())
-//            		System.out.println(var.getName() + " RC = " + _cplex.getReducedCost(var));
+//            		System.out.println(var.getName() + " = " + _cplex.getValue(var) + ", RC = " + _cplex.getReducedCost(var));
             }
         }
         catch (IloException e)
@@ -222,12 +291,20 @@ public class MasterWithRebuild implements Master
     private void addColumnToModel(Column column, int index) throws IloException
     {
 		// Register column with objective
-//    	System.out.println("Registering column - cost: " + column.getCost() + " - " + column.getCluster());
+    	System.out.println("Registering column - cost: " + column.getCost() + " - " + column.getCluster());
         IloColumn iloColumn = _cplex.column(_obj, column.getCost());
 
         // Register column with the constraints
         for(int i=0; i<_instance.getPoints(); ++i) if( column.contains(_instance.getPoint(i)) )
-            iloColumn = iloColumn.and(_cplex.column(_binding[i], 1));
+        {
+            iloColumn = iloColumn.and(_cplex.column(_covering[i], 1));
+            
+            if( _labeling[i] != null )
+                iloColumn = iloColumn.and(_cplex.column(_labeling[i], -1));
+
+            if( _relabeling[i] != null )
+                iloColumn = iloColumn.and(_cplex.column(_relabeling[i], -1));
+        }
         
         iloColumn = iloColumn.and(_cplex.column(_numberOfClusters[column.getCluster().getClassID()], -1));
         
@@ -239,17 +316,20 @@ public class MasterWithRebuild implements Master
     }
 
     // Gets the solution from the master problem. Returns all non-zero valued columns from the master problem
-    public Map<Cluster, Double> getSolution()
+    public Solution getSolution()
     {
-        Map<Cluster, Double> ret = new HashMap<Cluster, Double>();
+    	Solution ret = new Solution(_instance);
         try
         {
         	for(IloNumVar var: _variables.keySet())
         	{
         		double value = _cplex.getValue(var);
         		if( value > 0.01 )
-        			ret.put(_variables.get(var).getCluster(), value);
+        			ret.add(_variables.get(var).getCluster(), value);
             }
+        	
+        	for(int i=0; i<_instance.getPoints(); ++i) if( _bvar[i] != null && _cplex.getValue(_bvar[i]) > 0.9 )
+        		ret.relabel(_instance.getPoint(i), 1 - _instance.getPoint(i).getClassID());
         }
         catch (IloException e)
         {

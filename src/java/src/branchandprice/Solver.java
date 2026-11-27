@@ -102,7 +102,7 @@ public class Solver
 		while( _openNodes.size() > 0 && getDualBound() + 0.001 < _ub && elapsedTime() < _timeLimit )
 		{
 			Node current = nextNode();
-//			System.out.println("Solving node " + current.getId() + ", " + current.getBranchingDecision() + (current.getParent() != null ? " - Parent: Node " + current.getParent().getId() : ""));
+			System.out.println("Solving node " + current.getId() + ", " + current.getBranchingDecision() + (current.getParent() != null ? " - Parent: Node " + current.getParent().getId() : ""));
 
 //			Node aux = current;
 //			while( aux != null )
@@ -148,7 +148,7 @@ public class Solver
 						_exactPricing.updateObjective();
 						added = _exactPricing.generateColumns(remainingTime());
 					}
-					
+
 					for(Cluster cluster: added)
 						_master.addColumn(cluster);
 	

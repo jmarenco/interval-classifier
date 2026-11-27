@@ -21,6 +21,7 @@ public class PricingModel
 	private Instance _instance;
 	private int p; // Points
 	private int d; // Dimension
+	private int c; // Classes
 	private int _class;
 
 	// Solver
@@ -30,10 +31,11 @@ public class PricingModel
     private IloObjective obj;
 
     // Branching constraints
-    private Map<BranchingDecision, IloConstraint> branchingConstraints; //Constraints added to enforce branching decisions
+    private Map<BranchingDecision, IloConstraint> branchingConstraints; // Constraints added to enforce branching decisions
 
     // Variables
 	private IloNumVar[] z;
+	private IloNumVar[] bz;
 	private IloNumVar[] r;
 	private IloNumVar[] l;
 	private IloNumVar[][] wl;
@@ -61,6 +63,7 @@ public class PricingModel
 
         p = _instance.getPoints();
 		d = _instance.getDimension();
+		c = _instance.getClasses();
         
         this.buildModel();
     }
@@ -89,6 +92,9 @@ public class PricingModel
     
     private void createSolver() throws IloException
     {
+		if( _instance.getMaxRelabels() > 0 && _instance.getClasses() != 2 )
+			throw new RuntimeException("Pricing model only supports relabels for two classes!");
+		
         cplex = new IloCplex();
         cplex.setParam(IloCplex.Param.Advance, 0);
         cplex.setParam(IloCplex.Param.Threads, 1);
@@ -112,13 +118,19 @@ public class PricingModel
 	private void createVariables() throws IloException
 	{
 		z = new IloNumVar[p];
+		bz = new IloNumVar[p];
 		r = new IloNumVar[d];
 		l = new IloNumVar[d];
 		wl = new IloNumVar[p][d];
 		wr = new IloNumVar[p][d];
 		
 		for(int i=0; i<p; ++i)
+		{
 	    	z[i] = cplex.boolVar("z" + i);
+	    	
+	    	if( _instance.getMaxRelabels() > 0 && _instance.getPoint(i).getClassID() != _class )
+	    		bz[i] = cplex.boolVar("bz" + i);
+		}
 
 		for(int i=0; i<p; ++i)
 		for(int t=0; t<d; ++t)
@@ -195,7 +207,10 @@ public class PricingModel
 		{
 			IloNumExpr lhs = cplex.linearIntExpr();
 			lhs = cplex.sum(lhs, z[i]);
-			
+
+			if( bz[i] != null )
+				lhs = cplex.sum(lhs, bz[i]);
+
 			for(int t=0; t<d; ++t)
 			{
 				lhs = cplex.sum(lhs, wl[i][t]);
@@ -209,9 +224,14 @@ public class PricingModel
 		for(int t=0; t<d; ++t)
 		{
 			IloNumExpr lhs = cplex.linearIntExpr();
+
 			lhs = cplex.sum(lhs, z[i]);
 			lhs = cplex.sum(lhs, wl[i][t]);
 			lhs = cplex.sum(lhs, wr[i][t]);
+			
+			if( bz[i] != null )
+				lhs = cplex.sum(lhs, bz[i]);
+			
 			cplex.addLe(lhs, 1);
 		}
 	}
@@ -222,7 +242,10 @@ public class PricingModel
 
 		for(int i=0; i<p; ++i) if( _class == _instance.getPoint(i).getClassID() )
 			lhs = cplex.sum(lhs, z[i]);
-			
+
+		for(int i=0; i<p; ++i) if( _class != _instance.getPoint(i).getClassID() && bz[i] != null )
+			lhs = cplex.sum(lhs, bz[i]);
+
 		cplex.addGe(lhs, 1);
 	}
 
@@ -277,7 +300,7 @@ public class PricingModel
 
 		for(int i=0; i<p; ++i) if( _class != _instance.getPoint(i).getClassID() )
 			fobj = cplex.sum(fobj, z[i]);
-		
+
 		obj = cplex.addMinimize(fobj);
 	}
 	
@@ -338,19 +361,23 @@ public class PricingModel
             { 
             	int nsols = cplex.getSolnPoolNsolns();
             	int found = 0;
+
             	for (int j = 0; j < nsols; j++)
             	{
 //            		System.out.println(" => Pricing obj: " + cplex.getObjValue(j) + " - Dual of class constr: " + _master.getDuals()[p + _class]);
-					if (cplex.getObjValue(j) <= _reducedCostThreshold)
+					if (cplex.getObjValue(j) <= _reducedCostThreshold )
 					{ 
 		                Cluster cluster = new Cluster(_class);
-		                double[] values = cplex.getValues(z, j);
-		
 		                for(int i=0; i<_instance.getPoints(); ++i)
 		                {
-		                  	if( Math.abs(values[i] - 1) < _variableThreshold && _instance.getPoint(i).getClassID() == _class )
+		                  	if( Math.abs(cplex.getValue(z[i],j) - 1) < _variableThreshold && _instance.getPoint(i).getClassID() == _class )
 		                   		cluster.add(_instance.getPoint(i));
+
+		                  	if( bz[i] != null && Math.abs(cplex.getValue(bz[i],j) - 1) < _variableThreshold && _instance.getPoint(i).getClassID() != _class )
+		                   		cluster.add(_instance.getPoint(i).cloneAndRelabel(_class));
 		                }
+		                
+		                System.out.println(cluster + " -> " + cplex.getObjValue(j));
 		                
 		                if( newPatterns.contains(cluster) == false )
 		                	newPatterns.add(cluster);
@@ -379,6 +406,8 @@ public class PricingModel
         try
         {
             double[] dualCosts = _master.getDuals();
+            double dualRelabel = _instance.getMaxRelabels() > 0 ? dualCosts[p+c] : 0;
+
     		IloNumExpr fobj = cplex.linearNumExpr();
 
     		for(int i=0; i<p; ++i) if( _class != _instance.getPoint(i).getClassID() )
@@ -386,7 +415,13 @@ public class PricingModel
     		
     		for(int i=0; i<p; ++i) if( _class == _instance.getPoint(i).getClassID() )
     			fobj = cplex.sum(fobj, cplex.prod(-dualCosts[i], z[i]));
+
+    		for(int i=0; i<p; ++i) if( _class != _instance.getPoint(i).getClassID() && bz[i] != null )
+    			fobj = cplex.sum(fobj, cplex.prod(-dualCosts[i]+dualRelabel, bz[i]));
     		
+    		for(int i=0; i<p; ++i) if( _class == _instance.getPoint(i).getClassID() && bz[i] != null )
+    			fobj = cplex.sum(fobj, cplex.prod(1+dualRelabel, bz[i]));
+
     		fobj = cplex.sum(fobj, dualCosts[p + _class]);
             obj.setExpr(fobj);
             

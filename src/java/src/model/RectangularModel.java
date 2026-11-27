@@ -346,11 +346,14 @@ public class RectangularModel
 	    		
 				for(int i=0; i<p; ++i)
 				{
+					if( b[i] != null && cplex.getValue(b[i]) > 0.9 )
+						_solution.relabel(_instance.getPoint(i), 1 - _instance.getPoint(i).getClassID());
+
 					if( cplex.getValue(z[i][j]) > 0.9 && classOf[j] == _instance.getPoint(i).getClassID() )
 						cluster.add(_instance.getPoint(i));
 
 					if( bz[i][j] != null && cplex.getValue(bz[i][j]) > 0.9 && classOf[j] != _instance.getPoint(i).getClassID() )
-						cluster.add(_instance.getPoint(i).cloneAndRelabel(classOf[j]));
+						cluster.add(_instance.getPoint(i));
 				}
 				
 				_solution.add(cluster);

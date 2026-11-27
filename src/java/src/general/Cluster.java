@@ -333,14 +333,14 @@ public class Cluster
 		return ret;
 	}
 	
-	public List<Point> misclassified(Instance instance)
+	public List<Point> misclassified(Solution solution)
 	{
-		return instance.stream().filter(p -> p.getClassID() != this.getClassID() && this.covers(p)).collect(Collectors.toList());
+		return solution.getInstance().stream().filter(p -> solution.getLabel(p) != this.getClassID() && this.covers(p)).collect(Collectors.toList());
 	}
 	
-	public int objective(Instance instance)
+	public int objective(Solution solution)
 	{
-		return (int)instance.stream().filter(p -> p.getClassID() != this.getClassID() && this.covers(p)).count();
+		return (int)solution.getInstance().stream().filter(p -> solution.getLabel(p) != this.getClassID() && this.covers(p)).count();
 	}
 	
 	public double distanceToBorder(Point point)
@@ -371,5 +371,10 @@ public class Cluster
 		}
 		
 		return ret;
+	}
+
+	public int relabeled(Solution solution)
+	{
+		return (int)_points.stream().filter(p -> solution.relabeled(p)).count();
 	}
 }
